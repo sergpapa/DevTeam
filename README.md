@@ -1,6 +1,6 @@
 # DevTeam — an agent team for Claude Code
 
-A lean, credit-efficient development pipeline: **3 agents + 4 skills**, orchestrated by the main Claude Code session.
+A lean, credit-efficient development pipeline: **3 agents + 7 skills**, orchestrated by the main Claude Code session.
 
 ## Design philosophy
 
@@ -22,6 +22,7 @@ Sources for this shape: Anthropic's [Building effective agents](https://www.anth
 | `design-reviewer` | agent | sonnet | Visual consistency, UX heuristics, responsiveness, accessibility — from screenshots when possible | after UI changes |
 | `/project` | skill | — | System-level pipeline: discovery → architecture → walking skeleton → roadmap → build loop; resumes from `docs/roadmap.md` in any new chat | new app/system, or resuming one |
 | `/discover` | skill | — | Requirements discovery: interrogate the idea, research the landscape, write `docs/brief.md` | project conception / fuzzy scope |
+| `/adopt` | skill | — | Onboard an existing codebase: survey the code, reconstruct brief/ADRs/roadmap with an honest baseline, queue fixes as roadmap slices | existing project without `docs/` state files |
 | `/feature` | skill | — | The pipeline: scope → architecture → red → green → verify → review → hygiene | any non-trivial feature |
 | `/tdd` | skill | — | How to write tests that catch bugs, not tests that pass | whenever writing tests |
 | `/adr` | skill | — | Record decisions in `docs/adr/` | any stack/structure decision |
@@ -39,6 +40,10 @@ takes an idea from conception to v1 across as many chats as it needs.
 /feature Users can reset their password via an emailed link
 ```
 runs one slice's pipeline. For questions of structure only: "launch the architect agent to design X". For a cleanup pass: `/hygiene`.
+```
+/adopt
+```
+run inside an existing project takes it into the pipeline: it surveys the code, reconstructs `docs/brief.md`, retroactive ADRs, and a roadmap whose Milestone 0 stabilizes whatever blocks TDD (missing tests, broken build, hygiene issues). After adoption the project behaves like any `/project` resume — refactors and new features are just roadmap slices.
 
 ## Continuity across chats (why there is no top-level orchestrator agent)
 
