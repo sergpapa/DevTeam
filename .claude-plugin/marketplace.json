@@ -1,0 +1,17 @@
+{
+  "name": "devteam",
+  "metadata": {
+    "description": "Marketplace for the DevTeam plugin — a lean, credit-efficient dev team for Claude Code."
+  },
+  "owner": {
+    "name": "cergio",
+    "email": "cergiochehehe@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "devteam",
+      "source": "./",
+      "description": "A lean, credit-efficient dev team for Claude Code: TDD feature pipeline, project pipeline with cross-chat continuity, requirements discovery, ADRs, repo hygiene, plus architect / test-guardian / design-reviewer agents."
+    }
+  ]
+}
