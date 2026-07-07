@@ -27,6 +27,7 @@ Sources for this shape: Anthropic's [Building effective agents](https://www.anth
 | `/tdd` | skill | — | How to write tests that catch bugs, not tests that pass | whenever writing tests |
 | `/adr` | skill | — | Record decisions in `docs/adr/` | any stack/structure decision |
 | `/hygiene` | skill | — | File placement/size, dead code, gitignore, secrets, doc freshness | before committing |
+| `graphify` | external tool (optional) | — | Context engine: local knowledge graph of the codebase; structural questions go to the graph instead of file reads | codebases past ~50 source files |
 
 Plus `CLAUDE.md` — the standards every session loads automatically (testing rules, code standards, definition of done).
 
@@ -64,6 +65,17 @@ CLAUDE.md instructs each new session to read **Current state** before doing anyt
 - **DB/cloud & deployment experts** — architecture-time concerns (the architect covers them) until you have a real deployment target. When you do, add a `deploy` skill encoding *your* pipeline (provider, environments, rollback steps) — a generic deployment agent guessing at your infra would waste credits. Same trigger for a dedicated DB agent: complex migrations on a live database.
 - **Designer (generative)** — the design-reviewer *judges*; generating design is best done in the main session (iterating visually with screenshots), optionally seeded with inspiration examples passed to the reviewer as the reference design language.
 
+## Context engine (optional): Graphify
+
+[Graphify](https://github.com/Graphify-Labs/graphify) (MIT, open source, runs locally) turns the codebase into a queryable knowledge graph — `graphify query "what connects X to Y"` instead of grep-and-read. It attacks the two biggest context costs this team has: cold-start agents re-reading the repo, and exploratory file reads in the main session.
+
+- **Free for code**: extraction is deterministic tree-sitter parsing — no LLM, no tokens, nothing leaves the machine. (API keys are only needed for its optional PDF/image/video extraction, which this team doesn't use.)
+- **Install**: `pipx install graphifyy` (double *y* — the single-y PyPI package is unaffiliated), then `graphify install`. Keep the graph fresh with `graphify hook install` (post-commit rebuild).
+- **When**: worth it from roughly 50+ source files; on a tiny repo the graph saves nothing. `/project`'s build loop and `/adopt`'s survey say when to switch it on.
+- **How the team uses it**: CLAUDE.md routes structural questions to the graph first; the architect agent orients from graph queries instead of re-reading the codebase; `/adopt` surveys from the graph report; `/feature` points the architect's brief at the graph.
+
+If Graphify isn't installed, everything degrades gracefully to the grep-first rules — no stage depends on it.
+
 ## Credit-efficiency rules of thumb
 
 - Skip pipeline stages that don't apply; `/feature` says to announce skips.
@@ -71,6 +83,7 @@ CLAUDE.md instructs each new session to read **Current state** before doing anyt
 - Reviewer agents run on Sonnet; only the architect inherits your (likely bigger) main model, and it runs rarely.
 - Launch Stage-5 reviewers in parallel — one round-trip instead of three.
 - Grunt work gets offloaded to cheap models: CLAUDE.md instructs the main session to spawn Haiku/Sonnet subagents for token-heavy mechanical work (scaffolding, bulk edits, running test suites) instead of burning top-model tokens on it. Judgment work never gets delegated — a cold subagent can't be trusted with decisions.
+- On larger codebases, the Graphify graph (section above) replaces exploratory reads — one query instead of N file reads, and cold-start agents orient in one round-trip.
 
 ### Session habits (the biggest levers — these are yours, not the model's)
 1. **One chat per feature slice, not marathon sessions.** Every message re-sends the whole conversation; a 200-message chat makes each new turn expensive. The roadmap's Current state section exists precisely so fresh chats are cheap — use them.
@@ -85,7 +98,7 @@ CLAUDE.md instructs each new session to read **Current state** before doing anyt
 This repo is a Claude Code **plugin** and its own **marketplace**. To install it, run inside Claude Code:
 
 ```
-/plugin marketplace add <github-user>/DevTeam
+/plugin marketplace add sergpapa/DevTeam
 /plugin install devteam@devteam
 ```
 

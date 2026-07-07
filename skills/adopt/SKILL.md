@@ -11,7 +11,7 @@ If `docs/roadmap.md` already exists, this is not an adoption — run `/project` 
 
 ## Stage 1 — Survey the code (evidence before opinions)
 
-Read selectively — manifests, README, entry points, config, CI, directory shape; grep instead of full-file reads. Establish:
+If Graphify is installed (`graphify --version` succeeds) and the codebase is non-trivial (~50+ source files), build the knowledge graph first: `graphify .` — code extraction is local tree-sitter, zero tokens. Then survey from `GRAPH_REPORT.md` and `graphify query`/`explain` instead of walking files by hand, opening only what the graph flags; the graph also supplies structure evidence for Stage 3's retroactive ADRs. Without Graphify (or on a small repo), read selectively — manifests, README, entry points, config, CI, directory shape; grep instead of full-file reads. Establish:
 - **What it does**: user-facing surface (routes, screens, commands), the apparent core workflow.
 - **Stack & structure**: languages, frameworks, DB, services, and the big structural decisions someone already made.
 - **How to run it**: dev command, env vars/secrets it expects. Actually run it if possible.

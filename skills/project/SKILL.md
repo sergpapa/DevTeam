@@ -43,5 +43,7 @@ For each unchecked slice: run `/feature <slice>`. After it completes:
 
 End of every working session — even an interrupted one — update **Current state** with an honest "where I stopped and why". That line is what the next chat resumes from.
 
+**Context engine checkpoint:** once the codebase outgrows targeted greps (~50+ source files), suggest setting up Graphify: `graphify .` builds the knowledge graph (local tree-sitter, zero tokens) and `graphify hook install` keeps it fresh on every commit. Note it in **Current state** so later sessions know the graph exists. From then on, structural questions go to the graph first (see CLAUDE.md context economy).
+
 ## Milestone boundaries
 At each milestone's end: run the full suite, `/verify` the milestone goal end-to-end, run `/security-review` if the milestone touched auth/input/secrets, `/hygiene`, and give the user a milestone report (goal met?, deviations, what's next).

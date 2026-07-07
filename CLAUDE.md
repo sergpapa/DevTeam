@@ -33,6 +33,7 @@ Rules: the brief must name exact files, the exact expected outcome, and the conv
 
 ## Context economy
 - Read files selectively: targeted sections and greps over whole-file reads; never cat a large file or full log when a filtered view answers the question. Summarize long tool output instead of quoting it.
+- If the repo has a Graphify graph (`graph.json`), answer structural questions from it before opening files: `graphify query "<question>"`, `graphify path <A> <B>`, `graphify explain <X>`. Open only the files the graph points to. Keep it fresh — after structural changes run `graphify --update .` (skip if the post-commit hook is installed). Graph extraction for code is local tree-sitter: zero tokens.
 - When a feature slice is finished and the conversation has grown long, update **Current state** in the roadmap and suggest the user start a fresh chat for the next slice — a fresh session that reads the roadmap is cheaper than dragging a huge history forward.
 
 ## Code standards
