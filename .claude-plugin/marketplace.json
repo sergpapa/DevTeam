@@ -11,7 +11,7 @@
     {
       "name": "devteam",
       "source": "./",
-      "description": "A lean, credit-efficient dev team for Claude Code: TDD feature pipeline, project pipeline with cross-chat continuity, requirements discovery, ADRs, repo hygiene, plus architect / test-guardian / design-reviewer agents."
+      "description": "A lean, credit-efficient dev team for Claude Code: TDD feature pipeline, project pipeline with cross-chat continuity, requirements discovery, ADRs, repo hygiene, graph-aware context economy (optional Graphify), plus architect / test-guardian / design-reviewer agents."
     }
   ]
 }
