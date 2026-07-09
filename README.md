@@ -71,8 +71,8 @@ CLAUDE.md instructs each new session to read **Current state** before doing anyt
 
 - **Free for code**: extraction is deterministic tree-sitter parsing — no LLM, no tokens, nothing leaves the machine. (API keys are only needed for its optional PDF/image/video extraction, which this team doesn't use.)
 - **Install**: `pipx install graphifyy` (double *y* — the single-y PyPI package is unaffiliated), then `graphify install`. Keep the graph fresh with `graphify hook install` (post-commit rebuild).
-- **When**: worth it from roughly 50+ source files; on a tiny repo the graph saves nothing. `/project`'s build loop and `/adopt`'s survey switch it on when a codebase crosses the threshold — installing it first (with an announcement) if it's missing.
-- **How the team uses it**: CLAUDE.md routes structural questions to the graph first; the architect agent orients from graph queries instead of re-reading the codebase; `/adopt` surveys from the graph report; `/feature` points the architect's brief at the graph.
+- **When**: worth it from roughly 50+ source files; on a tiny repo the graph saves nothing. `/project`'s build loop, `/adopt`'s survey, and `/feature`'s Stage 0.5 preflight each switch it on when a codebase crosses the threshold — installing it first (with an announcement) if it's missing. All three check, so the graph gets built on whichever path you arrive by.
+- **How the team uses it**: CLAUDE.md routes structural questions to the graph first; the architect agent orients from graph queries instead of re-reading the codebase; `/adopt` surveys from the graph report; `/feature` builds the graph in Stage 0.5 if the repo has outgrown greps, then points the architect's brief at it.
 
 If Graphify isn't installed, everything degrades gracefully to the grep-first rules — no stage depends on it.
 

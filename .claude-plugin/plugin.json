@@ -1,7 +1,7 @@
 {
   "name": "devteam",
   "description": "A lean, credit-efficient dev team for Claude Code: TDD feature pipeline, project pipeline with cross-chat continuity, requirements discovery, ADRs, repo hygiene, graph-aware context economy (optional Graphify), plus architect / test-guardian / design-reviewer agents.",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "author": {
     "name": "cergio",
     "email": "cergiochehehe@gmail.com"
