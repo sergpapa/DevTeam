@@ -7,8 +7,16 @@ description: End-to-end TDD pipeline for building a feature or project — requi
 
 You (the main session) are the orchestrator AND the implementer. Do not delegate implementation to subagents — you have the full conversation context; they do not. Delegate only the steps marked as agent launches, and skip any stage that does not apply (no UI → no design review; existing architecture fits → no architect). Announce which stages you are skipping and why.
 
-## Stage 0 — Scope
-Restate the request as concrete acceptance criteria (bulleted, testable). If a criterion is genuinely ambiguous AND the ambiguity changes what you'd build, ask now — never mid-pipeline. Write the criteria to `docs/specs/<feature-slug>.md`.
+**Parallelism is the exception, not the default.** Fan work out to multiple subagents (or git worktrees) only when it is genuinely independent and large enough to earn the ~15× token multiplier — see the parallelism rule in CLAUDE.md. A normal slice does not qualify; build it in the main session.
+
+## Stage 0 — Scope & interrogate
+Restate the request as concrete acceptance criteria (bulleted, testable). Before writing them, grill the request for the decisions that change what gets built, and get the answers now, in ONE batch — never mid-pipeline (a question asked at Stage 3 has already bought you the wrong Stage 2). Ask only the forks that actually change the build; for anything the user won't care about, propose a default and record it as an assumption rather than asking. The forks worth surfacing:
+- **Edges** — empty/absent input, the unauthorised user, the concurrent edit, the failure of anything this touches (network, payment, a third party). What should happen?
+- **Scope fence** — what is explicitly NOT in this slice, so it can't creep in.
+- **Fit** — which existing behavior, data, or contract must not change; what this must interoperate with.
+- **Done means** — the observable outcome that proves it works, in the user's words.
+
+Where a fork changes the design rather than just a value, put the 2–3 real options with their trade-offs to the user and let them choose — don't silently pick one. If the interrogation reveals the request is really several features, say so and slice it. Write the resolved criteria and assumptions to `docs/specs/<feature-slug>.md`.
 
 ## Stage 0.5 — Context engine preflight
 Count the repo's source files, excluding dependencies and build output. If it is ~50+ and there is no `graph.json`, set up Graphify before going further — announce it first, then: `pipx install graphifyy && graphify install` if `graphify --version` fails (fall back to `python -m pip install --user graphifyy` if pipx is missing), `graphify .` to build the graph (local tree-sitter, zero tokens), and `graphify hook install` so every commit keeps it fresh. Below the threshold, targeted greps are cheaper — skip this stage and say so.
@@ -26,6 +34,8 @@ Write the implementation until the suite passes. Hard rules:
 - Never modify a test. If a test is wrong, stop and tell the user.
 - No hardcoding around test inputs; implement the general behavior.
 - Follow the standards in CLAUDE.md (file size, comments, responsiveness).
+
+If a test stays red and the cause isn't obvious from the failure, switch to `/debug` — guessing at fixes against a red suite wastes credits and patches symptoms instead of the cause.
 
 ## Stage 4 — Verify
 Run the full test suite, then `/verify` to exercise the changed behavior end-to-end in the real app — not just the tests.

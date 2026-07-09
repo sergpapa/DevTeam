@@ -1,6 +1,6 @@
 # DevTeam — an agent team for Claude Code
 
-A lean, credit-efficient development pipeline: **3 agents + 7 skills**, orchestrated by the main Claude Code session.
+A lean, credit-efficient development pipeline: **3 agents + 9 skills**, orchestrated by the main Claude Code session.
 
 ## Design philosophy
 
@@ -25,6 +25,8 @@ Sources for this shape: Anthropic's [Building effective agents](https://www.anth
 | `/adopt` | skill | — | Onboard an existing codebase: survey the code, reconstruct brief/ADRs/roadmap with an honest baseline, queue fixes as roadmap slices | existing project without `docs/` state files |
 | `/feature` | skill | — | The pipeline: scope → architecture → red → green → verify → review → hygiene | any non-trivial feature |
 | `/tdd` | skill | — | How to write tests that catch bugs, not tests that pass | whenever writing tests |
+| `/debug` | skill | — | Systematic debugging: reproduce → isolate the root cause → fix the cause → prove it with a regression test | behavior is wrong and the cause isn't obvious |
+| `/retro` | skill | — | Self-improvement loop: turn recurring mistakes into a durable rule, skill, or ADR | after a rough slice, or when a correction keeps recurring |
 | `/adr` | skill | — | Record decisions in `docs/adr/` | any stack/structure decision |
 | `/hygiene` | skill | — | File placement/size, dead code, gitignore, secrets, doc freshness | before committing |
 | `graphify` | external tool (optional) | — | Context engine: local knowledge graph of the codebase; structural questions go to the graph instead of file reads | codebases past ~50 source files |
@@ -84,6 +86,7 @@ If Graphify isn't installed, everything degrades gracefully to the grep-first ru
 - Launch Stage-5 reviewers in parallel — one round-trip instead of three.
 - Grunt work gets offloaded to cheap models: CLAUDE.md instructs the main session to spawn Haiku/Sonnet subagents for token-heavy mechanical work (scaffolding, bulk edits, running test suites) instead of burning top-model tokens on it. Judgment work never gets delegated — a cold subagent can't be trusted with decisions.
 - On larger codebases, the Graphify graph (section above) replaces exploratory reads — one query instead of N file reads, and cold-start agents orient in one round-trip.
+- Parallelism stays opt-in: CLAUDE.md only permits fanning out to subagents/worktrees for work that's independent, large, and mechanical-or-read-heavy — a normal slice stays in the main session, where context is free.
 
 ### Session habits (the biggest levers — these are yours, not the model's)
 1. **One chat per feature slice, not marathon sessions.** Every message re-sends the whole conversation; a 200-message chat makes each new turn expensive. The roadmap's Current state section exists precisely so fresh chats are cheap — use them.

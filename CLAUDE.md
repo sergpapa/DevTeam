@@ -31,6 +31,14 @@ Do NOT delegate:
 
 Rules: the brief must name exact files, the exact expected outcome, and the conventions that apply. Verify the subagent's work yourself (run the tests, spot-check the files) — never just trust its report.
 
+## Parallelism — only when value is high and risk is low
+Default to sequential work in the main session; it holds the full context and a serial plan is almost always right. Fan work out to parallel subagents (or git worktrees) ONLY when all three hold:
+1. **Independent** — the parts share no files and have no ordering dependency, so they can't race or clobber each other.
+2. **Worth the multiplier** — parallel agents cost roughly 15× the tokens of one session; the work must be large or repetitive enough that the wall-clock saving justifies that.
+3. **Shaped for it** — a read-heavy sweep (audit, multi-file search, multi-source research) or a batch of mechanical edits across modules that don't touch one another.
+
+When parallel agents *write* files, give each its own git worktree so they can't overwrite each other, then merge. Always announce the fan-out and why before spending — and remember a normal feature slice fails test 1, so it stays in the main session.
+
 ## Context economy
 - Read files selectively: targeted sections and greps over whole-file reads; never cat a large file or full log when a filtered view answers the question. Summarize long tool output instead of quoting it.
 - If the repo has a Graphify graph (`graph.json`), answer structural questions from it before opening files: `graphify query "<question>"`, `graphify path <A> <B>`, `graphify explain <X>`. Open only the files the graph points to. Keep it fresh — after structural changes run `graphify --update .` (skip if the post-commit hook is installed). Graph extraction for code is local tree-sitter: zero tokens.

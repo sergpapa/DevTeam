@@ -17,6 +17,8 @@ Ask the user the questions that change what gets built, in ONE batch (not a drip
 
 Propose defaults for anything they don't care about rather than asking; record them as assumptions.
 
+Grill, don't survey. Follow up on vague answers until they are concrete enough to build from — "users can share things" is not an answer, "an owner can grant another account read-only access by email" is. When a choice genuinely forks the product (not just a preference), lay out the 2–3 options with their trade-offs and make the user pick, rather than accepting the first thing said. A shallow answer here becomes a wrong architecture three stages later, which is the most expensive place to discover it.
+
 ## Stage 2 — Research (web)
 - Find 2–4 comparable products; note their table-stakes features, what users complain about, and what to deliberately NOT copy.
 - Check feasibility of anything technically risky in the idea (API availability, platform limits, pricing of required services) — verify with a search, not from memory.
