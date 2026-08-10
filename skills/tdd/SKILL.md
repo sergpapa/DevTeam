@@ -10,6 +10,10 @@ The point of writing tests first is that the tests encode the SPEC, uncontaminat
 ## The red rule
 Before writing any implementation, run the new tests and watch them fail — on an assertion or a missing symbol, not on a setup error. A test that passes before the implementation exists is broken; fix it before proceeding. Once tests are approved (test-guardian PRE pass), commit them; they are now the contract.
 
+Two shapes pass vacuously and are the usual offenders:
+- **Negative assertions** ("X did not happen", "no query fired") hold trivially while the code path doesn't exist yet. Lift the guard mid-test and prove the thing *does* happen, so the assertion has teeth.
+- **Shape checks** (`typeof x === 'function'`, "the prop exists") are satisfied by any implementation, including a wrong one. Assert that the effect lands where the app actually reads it.
+
 ## The immutability rule
 During implementation, tests are read-only. If a test seems wrong, stop and surface it to the user with your reasoning — never adjust, loosen, skip, or delete it to get to green. (Refactoring tests is allowed later, as its own reviewed step, never mixed into an implementation change.)
 

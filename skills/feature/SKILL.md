@@ -18,6 +18,8 @@ Restate the request as concrete acceptance criteria (bulleted, testable). Before
 
 Where a fork changes the design rather than just a value, put the 2–3 real options with their trade-offs to the user and let them choose — don't silently pick one. If the interrogation reveals the request is really several features, say so and slice it. Write the resolved criteria and assumptions to `docs/specs/<feature-slug>.md`.
 
+**When you slice, every slice must contain the first consumer of whatever it introduces.** A slice that ships a module, API, or config with no caller in that same slice pays twice: you design it blind, and the review that follows can only check it against imagined usage — so "this is incomplete because its consumer doesn't exist yet" is a guaranteed finding, and deferring it re-opens the slice later. If a plan already on paper has that shape, say so and fold the piece into the slice that first uses it. **The exception is an extraction of code that already exists** (deduplicating two copies, pulling a pure core out of a component): its callers are already there, so wire them in the same slice and let the existing tests prove the extraction behaviour-neutral. That gate is what makes the extraction cheap; without it you are writing new code, not extracting.
+
 ## Stage 0.5 — Context engine preflight
 Count the repo's source files, excluding dependencies and build output. If it is ~50+ and there is no `graph.json`, set up Graphify before going further — announce it first, then: `pipx install graphifyy && graphify install` if `graphify --version` fails (fall back to `python -m pip install --user graphifyy` if pipx is missing), `graphify .` to build the graph (local tree-sitter, zero tokens), and `graphify hook install` so every commit keeps it fresh. Below the threshold, targeted greps are cheaper — skip this stage and say so.
 
@@ -41,13 +43,17 @@ If a test stays red and the cause isn't obvious from the failure, switch to `/de
 Run the full test suite, then `/verify` to exercise the changed behavior end-to-end in the real app — not just the tests.
 
 ## Stage 5 — Independent review (launch in parallel where possible)
-- Launch **test-guardian** in POST mode.
-- If anything user-facing changed, launch **design-reviewer**.
-- Run `/code-review` (medium effort).
-Fix confirmed findings; push back on incorrect ones with reasoning rather than blindly applying them. If a fix changes behavior, re-run Stage 4.
+**Scale review depth to blast radius, not to how hard the slice felt.** Each reviewer costs about a subagent session; three passes over one pure module is waste, one pass over a migration touching live data is negligence. Launch whatever you do run in parallel — they are read-only and independent.
+- **Always: `/code-review` (medium effort).** The adversarial pass is the one that finds defects no test was written for, and it is the last line before user-visible or record-bearing output. Never skip it.
+- **`test-guardian` POST only if the test files changed after PRE.** Its central question is "were the tests weakened to make the implementation pass?" — and `git diff <red-commit> <green-commit> -- <test paths>` answers that in seconds. Run the diff first. If it is empty, say so in the report and skip the agent; spend the budget on Stage 4 instead. Run POST when tests did move during implementation, or when the implementation had to interpret an ambiguous test.
+- **`design-reviewer` only if something user-facing changed.** A behaviour-neutral refactor has no UI to review.
+
+Fix confirmed findings; push back on incorrect ones with reasoning rather than blindly applying them, and record each refusal with its reason where the slice is documented — an undocumented refusal reads as an oversight to the next reader. If a fix changes behavior, re-run Stage 4.
 
 ## Stage 6 — Hygiene & docs
 Run `/hygiene`. Update README/docs if behavior or setup changed. Commit.
+
+**The roadmap's `Current state` is ONE section, and you replace it — you never append a newer one.** A second section with a fresher date does not update the file, it forks it, and the next session resumes from whichever it reads first. Rewrite it in place; move the text it replaces into a dated entry in a slice log further down; and keep every still-pending deploy, migration, and UAT step in that one section rather than scattered across generations of the file. Same rule for the slice record in `docs/specs/<slug>.md`: append there, because that file is the history — the roadmap is the state.
 
 ## Final report to the user
 Lead with what was built and whether every stage passed. Include: acceptance criteria status, test count and coverage of the criteria, review verdicts, decisions recorded, and anything deferred or flagged. Report failures plainly — never present a partially-verified feature as done.

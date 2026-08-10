@@ -14,6 +14,7 @@ Project state lives in files, never in conversation memory. If `docs/roadmap.md`
 - NEVER modify a test to make it pass. If a test looks wrong, stop and tell the user — do not silently change or delete it.
 - Test behavior (inputs → observable outputs), not implementation details. Minimal mocking: mock external services, not your own modules.
 - A test suite that passes trivially proves nothing. If you cannot articulate what bug a test would catch, the test is not done.
+- **"Flaky" is a symptom, not a diagnosis.** Before accepting a test as flaky, run it ~10x in isolation. A test that fails 1-in-N is a real race — usually in the product, not the test. Fix the cause; never paper over it with a longer timeout, a retry, or a `skip`. The failure signature tells you which it is: a **wrong value** is a real race in the product; a **missing element / timeout** is usually harness saturation. Never widen a budget to accommodate a stress level you inflicted yourself.
 
 ## Model economy — delegate grunt work to cheaper models
 The main session usually runs on the most capable (most expensive) model. When a chunk of work is token-heavy but mechanically simple, do NOT do it inline — spawn a general-purpose subagent with a cheaper model override and a self-contained brief.
@@ -39,6 +40,8 @@ Default to sequential work in the main session; it holds the full context and a 
 
 When parallel agents *write* files, give each its own git worktree so they can't overwrite each other, then merge. Always announce the fan-out and why before spending — and remember a normal feature slice fails test 1, so it stays in the main session.
 
+**A subagent must never mutate the working tree.** Review/audit/research agents are read-only: brief them to inspect other commits with `git show <commit>:<path>` and `git diff <a> <b>` — NEVER `git checkout` / `restore` / `stash` / `reset`, which silently revert the tree and can die mid-run leaving it broken. Commit before launching one, and require it to confirm `git status` is clean when it finishes.
+
 ## Context economy
 - Read files selectively: targeted sections and greps over whole-file reads; never cat a large file or full log when a filtered view answers the question. Summarize long tool output instead of quoting it.
 - If the repo has a Graphify graph (`graph.json`), answer structural questions from it before opening files: `graphify query "<question>"`, `graphify path <A> <B>`, `graphify explain <X>`. Open only the files the graph points to. Keep it fresh — after structural changes run `graphify --update .` (skip if the post-commit hook is installed). Graph extraction for code is local tree-sitter: zero tokens.
@@ -50,6 +53,8 @@ When parallel agents *write* files, give each its own git worktree so they can't
 - UI is responsive by default (mobile 375px, tablet 768px, desktop 1440px) and keyboard-accessible.
 - No dead files, no commented-out code blocks, no secrets in the repo. `.gitignore` covers env files, build output, and IDE artifacts from the first commit.
 - Prefer boring, proven technology over the newest option unless there is a written reason (ADR).
+- Any `read → await → write-everything` (a wholesale write of state you read before the await) needs an in-flight guard: re-check that the state did not change during the await, and skip or re-derive if it did. Last-write-wins cannot break the tie, so the concurrent local change is silently erased.
+- New dependencies at a composition root are REQUIRED, not optional-with-default — a default silently accepts an unwired composition, turning a loud type error into a runtime bug.
 
 ## Definition of done for a feature
 1. Failing tests were written first and reviewed by the test-guardian agent.

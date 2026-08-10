@@ -18,7 +18,7 @@ Sources for this shape: Anthropic's [Building effective agents](https://www.anth
 |---|---|---|---|---|
 | main session | — | your choice | Orchestrates, implements front + back, writes tests | always |
 | `architect` | agent | inherit | Requirements → stack, structure, data model, contracts, ADR drafts | project kickoff / structural features |
-| `test-guardian` | agent | sonnet | Audits tests: fail-first, spec coverage, tautologies (PRE); weakened tests, gamed implementations (POST) | Stage 2 & Stage 5 of `/feature` |
+| `test-guardian` | agent | sonnet | Audits tests: fail-first, spec coverage, tautologies (PRE); weakened tests, gamed implementations (POST) | Stage 2 of `/feature`, then Stage 5 only if the tests moved during implementation |
 | `design-reviewer` | agent | sonnet | Visual consistency, UX heuristics, responsiveness, accessibility — from screenshots when possible | after UI changes |
 | `/project` | skill | — | System-level pipeline: discovery → architecture → walking skeleton → roadmap → build loop; resumes from `docs/roadmap.md` in any new chat | new app/system, or resuming one |
 | `/discover` | skill | — | Requirements discovery: interrogate the idea, research the landscape, write `docs/brief.md` | project conception / fuzzy scope |
@@ -83,7 +83,7 @@ If Graphify isn't installed, everything degrades gracefully to the grep-first ru
 - Skip pipeline stages that don't apply; `/feature` says to announce skips.
 - Small fixes bypass the pipeline entirely (CLAUDE.md says so).
 - Reviewer agents run on Sonnet; only the architect inherits your (likely bigger) main model, and it runs rarely.
-- Launch Stage-5 reviewers in parallel — one round-trip instead of three.
+- Review depth scales to blast radius, not to how hard the slice felt: `/code-review` always runs, test-guardian POST only if the test files changed after PRE, design-reviewer only if something user-facing did. Whatever does run, launch in parallel — one round-trip instead of three.
 - Grunt work gets offloaded to cheap models: CLAUDE.md instructs the main session to spawn Haiku/Sonnet subagents for token-heavy mechanical work (scaffolding, bulk edits, running test suites) instead of burning top-model tokens on it. Judgment work never gets delegated — a cold subagent can't be trusted with decisions.
 - On larger codebases, the Graphify graph (section above) replaces exploratory reads — one query instead of N file reads, and cold-start agents orient in one round-trip.
 - Parallelism stays opt-in: CLAUDE.md only permits fanning out to subagents/worktrees for work that's independent, large, and mechanical-or-read-heavy — a normal slice stays in the main session, where context is free.
