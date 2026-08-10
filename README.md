@@ -19,7 +19,7 @@ Sources for this shape: Anthropic's [Building effective agents](https://www.anth
 | main session | — | your choice | Orchestrates, implements front + back, writes tests | always |
 | `architect` | agent | inherit | Requirements → stack, structure, data model, contracts, ADR drafts | project kickoff / structural features |
 | `test-guardian` | agent | sonnet | Audits tests: fail-first, spec coverage, tautologies (PRE); weakened tests, gamed implementations (POST) | Stage 2 of `/feature`, then Stage 5 only if the tests moved during implementation |
-| `design-reviewer` | agent | sonnet | Visual consistency, UX heuristics, responsiveness, accessibility — from screenshots when possible | after UI changes |
+| `design-reviewer` | agent | sonnet | Visual consistency, UX heuristics, responsiveness, accessibility — from screenshots at 375/768/1440; reports responsiveness as unverified if it cannot render the app | after UI changes |
 | `/project` | skill | — | System-level pipeline: discovery → architecture → walking skeleton → roadmap → build loop; resumes from `docs/roadmap.md` in any new chat | new app/system, or resuming one |
 | `/discover` | skill | — | Requirements discovery: interrogate the idea, research the landscape, write `docs/brief.md` | project conception / fuzzy scope |
 | `/adopt` | skill | — | Onboard an existing codebase: survey the code, reconstruct brief/ADRs/roadmap with an honest baseline, queue fixes as roadmap slices | existing project without `docs/` state files |

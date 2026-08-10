@@ -27,3 +27,10 @@ During implementation, tests are read-only. If a test seems wrong, stop and surf
 
 ## Where TDD applies — and where it doesn't
 TDD fits logic, APIs, data transformations, and state machines. It fits exploratory UI badly: pixel-level look-and-feel is better iterated visually and judged by the design-reviewer agent. For UI features, TDD the behavior (rendering logic, state, form validation, routing) and leave aesthetics to visual review — do not write brittle snapshot tests as a substitute for design judgment.
+
+**Responsiveness is not all aesthetics — assert the falsifiable part.** "Does this look balanced at 768px" is design judgment, but three things are hard assertions, and a UI slice should carry them in the suite:
+- **No horizontal overflow** at 375px (and 320px): `scrollWidth <= clientWidth` on the document and on any scroll container that isn't deliberately horizontal.
+- **The breakpoint actually switches** — whatever collapses, stacks, or hides below 768px is asserted present in one layout and absent in the other, at 767/768.
+- **Touch targets ≥ 44px** on interactive elements at mobile width.
+
+These belong in tests rather than in review because they are the parts that silently regress: the design-reviewer only runs on slices that touch UI, so without an assertion a later back-end slice can break the mobile layout with nothing watching. They need a real layout engine — Playwright or equivalent against the running app, using the screenshot/browser harness from `/project` Stage 2 — since JSDOM reports zero for every dimension and will pass all three vacuously (see the red rule).

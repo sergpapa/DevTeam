@@ -19,6 +19,8 @@ Launch the **architect** agent with the brief. Present the stack and structure c
 ## Stage 2 — Walking skeleton
 Scaffold the repo per the architect's structure: tooling, test infrastructure, linting, `.gitignore`, README stub, and the thinnest possible end-to-end path (e.g. one page hitting one endpoint returning one DB row). Verify the skeleton runs and an (empty) test suite executes. Commit. Everything after this is `/feature` slices on a working base.
 
+**If the product has a UI, the skeleton must also include a screenshot command** — one documented invocation that boots the app and captures it at 375px, 768px, and 1440px (Playwright, or whatever `/run` uses for this project). Build it here, while there is one trivial page to point it at, and record the command in the README. Every later design review depends on it: a reviewer that cannot get a rendered screenshot cannot see horizontal overflow at all, because overflow is a property of laid-out content and not of the stylesheet — so skipping this stage doesn't defer the cost, it silently removes responsiveness from the pipeline for the life of the project.
+
 ## Stage 3 — Roadmap
 Write `docs/roadmap.md` from the brief's v1 scope:
 
