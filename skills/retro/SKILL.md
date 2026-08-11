@@ -1,6 +1,6 @@
 ---
 name: retro
-description: Self-improvement loop — turn recurring mistakes and friction from recent work into a durable fix (a CLAUDE.md rule, a new/updated skill, or an ADR). Use at the end of a rough slice, when the same correction keeps recurring, or on demand so lessons compound instead of being re-learned.
+description: Self-improvement loop — turn recurring mistakes and friction from recent work into a durable fix (a CLAUDE.md rule, a new/updated skill, or an ADR). Use at the end of a rough slice, when the same correction keeps recurring, or on demand so lessons compound instead of being re-learned. Ends with a prune pass — run only after approved changes are applied — that retires rules/skills the changes made stale.
 ---
 
 # Retro — the self-improvement loop
@@ -25,6 +25,12 @@ Send each to the cheapest durable home — and dedupe against what's already the
 
 ## Stage 3 — Propose
 Show the user a short list: each lesson, its target file, and the exact change (the line to add, the skill to create, the ADR to write). They approve, edit, or reject per item; apply only what's approved. Flag that changes to a skill or CLAUDE.md take effect next session, not retroactively.
+
+## Stage 4 — Prune (only after the approved changes are applied)
+Additions ratchet: every CLAUDE.md line and every skill description is re-billed in each session that loads it, so growth without retirement is a slow leak. Once the Stage 3 approvals are applied — never before, and never bundled into the Stage 3 approval batch — sweep the durable files for what the applied changes made stale:
+- A CLAUDE.md rule now redundant: superseded by a new rule, absorbed into a skill, or guarding a mistake that no longer occurs.
+- A skill whose trigger never fires anymore, or whose job a newer rule or skill now covers.
+Propose each retirement with the reason it is safe to drop; the user approves, edits, or rejects per item, exactly as in Stage 3. No candidates → say so in one line. Never prune silently.
 
 ## When NOT to use
 Mid-slice (finish it first), or when the run was clean — an empty retro is the correct outcome after a smooth slice, and saying so in one line beats inventing rules to justify the pass.

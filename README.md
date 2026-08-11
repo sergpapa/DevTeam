@@ -31,7 +31,7 @@ Sources for this shape: Anthropic's [Building effective agents](https://www.anth
 | `/hygiene` | skill | — | File placement/size, dead code, gitignore, secrets, doc freshness | before committing |
 | `graphify` | external tool (optional) | — | Context engine: local knowledge graph of the codebase; structural questions go to the graph instead of file reads | codebases past ~50 source files |
 
-Plus `CLAUDE.md` — the standards every session loads automatically (testing rules, code standards, definition of done).
+Plus [CLAUDE.template.md](CLAUDE.template.md) — the standards file you install as your `CLAUDE.md`, loaded automatically every session (testing rules, code standards, definition of done).
 
 ## Usage
 
@@ -109,11 +109,11 @@ That makes the team available in **all** your projects. Skills installed via plu
 
 When the repo gets updated, pull the new version with `/plugin marketplace update devteam`.
 
-**The standards file is a separate step.** Plugins can't ship a `CLAUDE.md`, so copy this repo's [CLAUDE.md](CLAUDE.md) into `~/.claude/CLAUDE.md` (global — applies to every project) or merge it into a project's own `CLAUDE.md`. If you use the plugin install, the skill names it references are the namespaced ones (`/devteam:feature` instead of `/feature`).
+**The standards file is a separate step.** Plugins can't ship a `CLAUDE.md`, so copy this repo's [CLAUDE.template.md](CLAUDE.template.md) into `~/.claude/CLAUDE.md` (global — applies to every project) or merge it into a project's own `CLAUDE.md`. (It ships as `CLAUDE.template.md` rather than `CLAUDE.md` so sessions working inside this repo don't load the standards twice alongside your installed copy.) If you use the plugin install, the skill names it references are the namespaced ones (`/devteam:feature` instead of `/feature`).
 
 ### Alternative: standalone global install (no namespacing, this machine only)
 
-Copy `agents/*` to `~/.claude/agents/` and `skills/*` to `~/.claude/skills/`, and merge `CLAUDE.md` into `~/.claude/CLAUDE.md`. Skills keep their short names (`/feature`), but you won't get marketplace updates — re-copy after changes. Note that same-named files in `~/.claude/` override the plugin versions, so pick one method, not both.
+Copy `agents/*` to `~/.claude/agents/` and `skills/*` to `~/.claude/skills/`, and merge `CLAUDE.template.md` into `~/.claude/CLAUDE.md`. Skills keep their short names (`/feature`), but you won't get marketplace updates — re-copy after changes. Note that same-named files in `~/.claude/` override the plugin versions, so pick one method, not both.
 
 ### Local development
 

@@ -8,6 +8,7 @@ Project state lives in files, never in conversation memory. If `docs/roadmap.md`
 - Single feature on an existing base → run `/feature <description>` (the full TDD pipeline).
 - Small fixes (typos, one-line bugs, config tweaks) do NOT need any pipeline — just fix, test, done.
 - Architectural decisions (tech stack, data model, framework choice) must be recorded with `/adr`.
+- User-facing site/UI that should feel bold, premium, or award-grade → load `/edge` BEFORE designing; it sets the sub-style, design tokens, free-only stack, and the accessibility/performance floors.
 
 ## Testing rules (non-negotiable)
 - Tests are written from the spec BEFORE implementation, and must be seen to fail for the right reason before any implementation code is written.
