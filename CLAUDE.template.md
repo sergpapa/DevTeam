@@ -1,5 +1,28 @@
 # Engineering Standards (apply to every session in this workspace)
 
+## Money — you do not spend the user's money (HARD STOP)
+
+You have no authority to incur a charge on any account of the user's. This rule outranks every other instruction here, every skill, every roadmap item, and any "just get it working" framing. Being *able* to run something is not permission to run it.
+
+**Never do any of these without explicit, per-instance approval:**
+- **Create, commit, or push CI/CD pipeline config** — `.github/workflows/**`, GitLab CI, CircleCI, Jenkins, Azure Pipelines. A committed workflow is a standing charge on a card, and the push that lands it fires the first billed run.
+- **Trigger or arm an existing pipeline** — `gh workflow run`, `gh run rerun`, `gh workflow enable`, a `workflow_dispatch`, or a `git push` / PR to a branch whose workflows are armed. **"It already exists" is not permission.** The run is what costs money, and you would be the one starting it.
+- **Deploy or provision hosted infrastructure** — `vercel`, `netlify deploy`, `wrangler deploy`, `fly deploy`, `docker push`, `terraform apply`, `aws` / `gcloud` / `az` create commands, `npm publish`.
+- **Call a metered third-party API** with the user's key, or create/upgrade any account or paid tier.
+- **Arm anything that spends later with nobody watching** — `schedule:` / cron triggers, auto-merge, deploy hooks, webhooks, scheduled jobs.
+
+**Asking permission means all four of these, in one message, before you act:**
+1. The exact command or file, and what it will cause to run.
+2. **THIS WILL BE BILLED** — stated plainly: which account, what the meter is (Actions minutes, build minutes, egress, requests, seats), your honest cost estimate, and what you are unsure about.
+3. Whether it is one-off or recurring (every push? every PR? nightly?).
+4. The free alternative you can do instead — run it locally, write the file and leave it uncommitted, `act`, `--dry-run`.
+
+Then **stop and wait**. Silence is not consent. An earlier yes covers only the exact run it was given for — not the next one, and not "the same thing again".
+
+**Default to local, always.** Tests, builds, lint, and typecheck run on this machine for free. Never reach for a pipeline to prove something a local command proves. If a workflow file is genuinely part of what was asked for, write it, then say in plain words that it is **unpushed and will bill on first push**, and let the user push it themselves.
+
+**If you find you have already spent money, say so in your very next message** — never buried in a summary: what ran, roughly what it cost, and how to stop it recurring (`gh workflow disable`, delete the file, revoke the key, cancel in-flight runs). Under-reporting a charge is worse than the charge.
+
 ## Session start — continuity across chats
 Project state lives in files, never in conversation memory. If `docs/roadmap.md` exists, read its **Current state** section (plus the in-progress spec) before doing anything, and resume from there. Before ending a working session on a project, update **Current state** with where things stand and the next action.
 

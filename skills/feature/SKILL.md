@@ -53,6 +53,8 @@ Fix confirmed findings; push back on incorrect ones with reasoning rather than b
 ## Stage 6 — Hygiene & docs
 Run `/hygiene`. Update README/docs if behavior or setup changed. Commit.
 
+**The pipeline ends at a local commit.** Do not `git push`, open a PR, trigger a workflow, or deploy to finish a slice — a push to a branch with armed workflows spends the user's Actions minutes, and no stage above needs it to call the slice done. Hand over the commit and let the user decide. If they ask you to push, first name the charge the push will trigger (money rule, CLAUDE.md).
+
 **The roadmap's `Current state` is ONE section, and you replace it — you never append a newer one.** A second section with a fresher date does not update the file, it forks it, and the next session resumes from whichever it reads first. Rewrite it in place; move the text it replaces into a dated entry in a slice log further down; and keep every still-pending deploy, migration, and UAT step in that one section rather than scattered across generations of the file. Same rule for the slice record in `docs/specs/<slug>.md`: append there, because that file is the history — the roadmap is the state.
 
 ## Final report to the user

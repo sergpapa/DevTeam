@@ -17,6 +17,7 @@ On a non-trivial codebase (~50+ source files), use Graphify. If `graphify --vers
 - **How to run it**: dev command, env vars/secrets it expects. Actually run it if possible.
 - **Test reality**: run the suite. Record the honest baseline — runner present? passes? coverage of the core workflow? A suite that passes trivially counts as "no tests" for planning purposes.
 - **Health flags**: build errors, dead directories, secrets in the repo, missing `.gitignore`, huge files. Note them; do NOT fix them yet.
+- **Billable automation**: existing pipelines (`.github/workflows/**`, other CI) with their triggers, scheduled jobs, deploy hooks, metered API keys. This is a **read-only inventory — never run, re-run, or enable one to see what it does**, and never push while surveying. An existing setup is not permission to spend on it (money rule, CLAUDE.md). Report each in Stage 4 with the meter named.
 
 ## Stage 2 — Interview the owner (one batch)
 
@@ -36,4 +37,4 @@ Ask only what the code cannot answer, in ONE batch:
 
 ## Stage 4 — Handoff
 
-Present the adoption report: what the project is, baseline health, the proposed roadmap, and any Stage-1 findings that need a decision (e.g. leaked secret → rotate). Get a nod on milestone order, then commit the `docs/` files as `Adopt project into dev-team pipeline`. From here the project is a normal `/project` resume; a fresh chat is the cheapest way to start Milestone 0.
+Present the adoption report: what the project is, baseline health, the proposed roadmap, and any Stage-1 findings that need a decision (e.g. leaked secret → rotate; a `schedule:`d workflow billing today → disable it?). Get a nod on milestone order, then commit the `docs/` files as `Adopt project into dev-team pipeline`. From here the project is a normal `/project` resume; a fresh chat is the cheapest way to start Milestone 0.

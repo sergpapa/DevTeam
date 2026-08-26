@@ -19,6 +19,8 @@ Launch the **architect** agent with the brief. Present the stack and structure c
 ## Stage 2 — Walking skeleton
 Scaffold the repo per the architect's structure: tooling, test infrastructure, linting, `.gitignore`, README stub, and the thinnest possible end-to-end path (e.g. one page hitting one endpoint returning one DB row). Verify the skeleton runs and an (empty) test suite executes. Commit. Everything after this is `/feature` slices on a working base.
 
+**The skeleton ships NO CI, and it is verified locally.** Do not scaffold `.github/workflows/**` or any other pipeline config here — a committed workflow is a standing charge on the user's card, and the push that lands it fires the first billed run. Tooling, tests, and lint must each be runnable by a local command; that is exactly what Stage 2 proves. If the user wants CI, it is its own roadmap slice, quoted and approved first per the money rule in CLAUDE.md.
+
 **If the product has a UI, the skeleton must also include a screenshot command** — one documented invocation that boots the app and captures it at 375px, 768px, and 1440px (Playwright, or whatever `/run` uses for this project). Build it here, while there is one trivial page to point it at, and record the command in the README. Every later design review depends on it: a reviewer that cannot get a rendered screenshot cannot see horizontal overflow at all, because overflow is a property of laid-out content and not of the stylesheet — so skipping this stage doesn't defer the cost, it silently removes responsiveness from the pipeline for the life of the project.
 
 ## Stage 3 — Roadmap
@@ -48,4 +50,4 @@ End of every working session — even an interrupted one — update **Current st
 **Context engine checkpoint:** once the codebase outgrows targeted greps (~50+ source files), set up Graphify — install it if missing (announce first): `pipx install graphifyy && graphify install`. Then `graphify .` builds the knowledge graph (local tree-sitter, zero tokens) and `graphify hook install` keeps it fresh on every commit. Note it in **Current state** so later sessions know the graph exists. From then on, structural questions go to the graph first (see CLAUDE.md context economy).
 
 ## Milestone boundaries
-At each milestone's end: run the full suite, `/verify` the milestone goal end-to-end, run `/security-review` if the milestone touched auth/input/secrets, `/hygiene`, and give the user a milestone report (goal met?, deviations, what's next).
+At each milestone's end: run the full suite, `/verify` the milestone goal end-to-end, run `/security-review` if the milestone touched auth/input/secrets, `/hygiene`, and give the user a milestone report (goal met?, deviations, what's next). **Deploying the milestone, provisioning hosting, or enabling a pipeline is never part of the wrap-up** — each is a separate step you propose with the charge named, then wait for approval on (money rule, CLAUDE.md).

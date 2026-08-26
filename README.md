@@ -31,7 +31,7 @@ Sources for this shape: Anthropic's [Building effective agents](https://www.anth
 | `/hygiene` | skill | — | File placement/size, dead code, gitignore, secrets, doc freshness | before committing |
 | `graphify` | external tool (optional) | — | Context engine: local knowledge graph of the codebase; structural questions go to the graph instead of file reads | codebases past ~50 source files |
 
-Plus [CLAUDE.template.md](CLAUDE.template.md) — the standards file you install as your `CLAUDE.md`, loaded automatically every session (testing rules, code standards, definition of done).
+Plus [CLAUDE.template.md](CLAUDE.template.md) — the standards file you install as your `CLAUDE.md`, loaded automatically every session (the money hard-stop, testing rules, code standards, definition of done).
 
 ## Usage
 
@@ -80,6 +80,7 @@ If Graphify isn't installed, everything degrades gracefully to the grep-first ru
 
 ## Credit-efficiency rules of thumb
 
+- **Nothing in this pipeline spends real money.** CLAUDE.md's money rule is a hard stop: no CI config, no pipeline run, no deploy, no metered API call without explicit per-instance approval that names the charge. `/project` ships a skeleton with no CI, `/feature` ends at a local commit (never a push), `/hygiene` audits billable automation without running it, `/adopt` inventories it read-only, and the architect must quote the cost surface of every choice. Local commands are free; Actions minutes are not.
 - Skip pipeline stages that don't apply; `/feature` says to announce skips.
 - Small fixes bypass the pipeline entirely (CLAUDE.md says so).
 - Reviewer agents run on Sonnet; only the architect inherits your (likely bigger) main model, and it runs rarely.

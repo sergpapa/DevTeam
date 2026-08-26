@@ -44,7 +44,7 @@ Sources: **Google Fonts** (license pre-vetted, gold standard) · **Fontshare** (
 
 ## Services
 
-- **Hosting:** **Cloudflare Pages** (unlimited bandwidth, no commercial restriction) or **Netlify free** (explicitly allows commercial use; 100GB/mo). ⚠ **Vercel Hobby forbids commercial use**; GitHub Pages forbids transactional sites (pure showcase OK).
+- **Hosting:** **Cloudflare Pages** (unlimited bandwidth, no commercial restriction) or **Netlify free** (explicitly allows commercial use; 100GB/mo). ⚠ **Vercel Hobby forbids commercial use**; GitHub Pages forbids transactional sites (pure showcase OK). Every "free" host is metered (build minutes, bandwidth, invocations) — state the limits when you recommend one, and never connect or deploy to the user's account yourself without approval (money rule, CLAUDE.md).
 - **Content:** repo-native first — **Astro content collections / markdown**, or **Decap CMS** (MIT, free forever) when an editor UI is needed. Hosted free tiers that are genuinely usable: Sanity (10k docs), Prismic (unlimited docs, 1 user). **Payload** (MIT) when a real admin + relational content is required.
 - **Analytics:** if needed, a lightweight self-hosted option (e.g. Umami/Plausible self-hosted, both OSS) beats resurrecting the GA tag graveyard every 2019 site still carries.
 

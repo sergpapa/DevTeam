@@ -16,6 +16,7 @@ Structural cleanliness review — this complements `/code-review` (which hunts l
 6. **Naming & consistency** — one casing convention per file type; names say what things are.
 7. **Comments & docs** — public functions/classes have doc comments (why + contract, per CLAUDE.md); README's setup/run instructions still match reality; specs and ADRs referenced by the change are up to date.
 8. **Dependency sanity** — no dependencies in the manifest that nothing imports; lockfile committed.
+9. **Billable automation** — inventory everything in the repo that spends real money when it runs: `.github/workflows/**` and other pipeline config (record each trigger — `push`, `pull_request`, `schedule`, `workflow_dispatch`), deploy hooks, cron/scheduled jobs, auto-merge settings, metered API keys wired into scripts. **Read-only: never run one, and never `gh workflow enable`/`run` it to find out what it does.** Flag hardest: a `schedule:` trigger (it bills with nobody watching) and any workflow committed without the user having approved the cost (say so plainly — it bills on the next push).
 
 ## Output
-Applied fixes first (one line each), then open judgment calls ranked by importance. If everything is clean, say so in one line.
+Billable findings (check 9) go FIRST, with the meter and trigger named — they outrank every other finding, and you report them rather than acting on them. Then applied fixes (one line each), then open judgment calls ranked by importance. If everything is clean, say so in one line.
