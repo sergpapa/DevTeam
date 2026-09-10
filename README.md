@@ -1,6 +1,6 @@
 # DevTeam — an agent team for Claude Code
 
-A lean, credit-efficient development pipeline: **3 agents + 9 skills**, orchestrated by the main Claude Code session.
+A lean, credit-efficient development pipeline: **3 agents + 9 skills + a house voice**, orchestrated by the main Claude Code session.
 
 ## Design philosophy
 
@@ -29,9 +29,26 @@ Sources for this shape: Anthropic's [Building effective agents](https://www.anth
 | `/retro` | skill | — | Self-improvement loop: turn recurring mistakes into a durable rule, skill, or ADR | after a rough slice, or when a correction keeps recurring |
 | `/adr` | skill | — | Record decisions in `docs/adr/` | any stack/structure decision |
 | `/hygiene` | skill | — | File placement/size, dead code, gitignore, secrets, doc freshness | before committing |
+| `Plain` | output style | — | How answers read: answer first, plain language, no filler — and the evidence (errors, security findings, test failures) never compressed | every response, automatically, whenever the plugin is enabled |
 | `graphify` | external tool (optional) | — | Context engine: local knowledge graph of the codebase; structural questions go to the graph instead of file reads | codebases past ~50 source files |
 
 Plus [CLAUDE.template.md](CLAUDE.template.md) — the standards file you install as your `CLAUDE.md`, loaded automatically every session (the money hard-stop, testing rules, code standards, definition of done).
+
+## How answers read: the Plain output style
+
+Style is not a skill. Skills load when they are invoked or when their description matches, but *how you answer* has to apply on every turn — so this ships as an [output style](https://code.claude.com/docs/en/output-styles) instead, in [output-styles/plain.md](output-styles/plain.md).
+
+It sets `keep-coding-instructions: true`, so only the voice changes — scope, tests, verification, and the code standards are untouched. Three rules do most of the work:
+
+- **Answer first.** The result, then the reasoning. A reader who stops after two lines still has what they asked for.
+- **Cut any sentence that would fit unchanged in a different conversation.** One test that removes preamble, recap, tool-call narration, and the offer to help further, without maintaining a banned-phrases list.
+- **Brevity is a rule about prose, never about evidence.** Error output stays verbatim, security and data-loss findings stay whole, test failures stay named down to the assertion, and bad news is stated up front instead of softened.
+
+Jargon is glossed, not laundered: the real term stays (you need it to search the code) and gets explained once in a clause. And terseness only works when depth is one word away — say **"elaborate"** for the full teaching version, after which the default resumes on its own.
+
+It ships with `force-for-plugin: true`, which means it applies whenever the plugin is enabled and **overrides your `outputStyle` setting**. If you would rather choose your style per project, set that field to `false` in the file and pick `Plain` yourself from `/config`.
+
+Output styles don't reach subagents — they run their own system prompts — so the same floor is restated as a **Voice** section in [CLAUDE.template.md](CLAUDE.template.md) and as one line in each agent's report format.
 
 ## Usage
 
@@ -114,7 +131,7 @@ When the repo gets updated, pull the new version with `/plugin marketplace updat
 
 ### Alternative: standalone global install (no namespacing, this machine only)
 
-Copy `agents/*` to `~/.claude/agents/` and `skills/*` to `~/.claude/skills/`, and merge `CLAUDE.template.md` into `~/.claude/CLAUDE.md`. Skills keep their short names (`/feature`), but you won't get marketplace updates — re-copy after changes. Note that same-named files in `~/.claude/` override the plugin versions, so pick one method, not both.
+Copy `agents/*` to `~/.claude/agents/`, `skills/*` to `~/.claude/skills/`, and `output-styles/*` to `~/.claude/output-styles/`, and merge `CLAUDE.template.md` into `~/.claude/CLAUDE.md`. Skills keep their short names (`/feature`) and `Plain` becomes a style you pick yourself from `/config` (`force-for-plugin` only applies to plugin-shipped styles), but you won't get marketplace updates — re-copy after changes. Note that same-named files in `~/.claude/` override the plugin versions, so pick one method, not both.
 
 ### Local development
 

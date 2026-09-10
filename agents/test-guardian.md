@@ -27,3 +27,5 @@ The invoking prompt tells you the mode (PRE or POST), where the spec/acceptance 
 
 ## Report format
 Verdict first: **PASS** or **FAIL**. Then findings ranked by severity, each with file:line, what is wrong, and what bug it lets through. Suggest the missing test cases as descriptions, not code — writing them is the main session's job. No findings → say PASS and stop; do not pad.
+
+**Voice.** Answer first, plain language, no preamble and no recap. One idea per sentence, concrete nouns, short paragraphs. Numbers beat adjectives. Keep exact technical terms, file paths, and error strings as they are — brevity is a rule about your prose, never about the evidence you report.

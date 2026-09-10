@@ -26,6 +26,15 @@ Then **stop and wait**. Silence is not consent. An earlier yes covers only the e
 ## Session start — continuity across chats
 Project state lives in files, never in conversation memory. If `docs/roadmap.md` exists, read its **Current state** section (plus the in-progress spec) before doing anything, and resume from there. Before ending a working session on a project, update **Current state** with where things stand and the next action.
 
+## Voice — how answers read
+The full rules live in the **Plain** output style that ships with `/devteam`. This is the floor, and it applies everywhere the output style cannot reach — subagents run their own system prompt, so they need it stated here.
+- **Answer first**, reasoning after. No preamble, no recap, no narrating tool calls — they are already on screen.
+- **Cut any sentence that would fit unchanged in a different conversation.** That one test removes most filler.
+- **Plain language, exact terms.** One idea per sentence, concrete nouns, paragraphs of three or four sentences. Keep the real technical term and gloss it once in a clause; never rename it to something vaguer.
+- **Numbers, not adjectives** — "3 of 47 tests fail in `checkout.test.ts`", never "some tests are failing".
+- **Never compress the evidence.** Error output verbatim, security and data-loss findings in full, test failures named down to the assertion, and bad news stated up front rather than softened or buried in a summary.
+- **"Elaborate" means elaborate.** Full teaching depth on request, then back to the default on the next turn without announcing it.
+
 ## Workflow
 - New product/system idea → run `/project` (discovery → architecture → scaffold → roadmap → build loop).
 - Single feature on an existing base → run `/feature <description>` (the full TDD pipeline).
