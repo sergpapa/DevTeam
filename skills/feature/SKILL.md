@@ -1,6 +1,6 @@
 ---
 name: feature
-description: End-to-end TDD pipeline for building a feature or project — requirements → architecture → failing tests → implementation → verification → design review → code review → hygiene. Use for any non-trivial feature; skip for one-line fixes.
+description: End-to-end TDD pipeline for building a feature or project (requirements, architecture, failing tests, implementation, verification, design review, code review, hygiene). Use whenever the user asks to add, build, implement, or ship a feature or change that spans more than one file ("add X", "build it", "implement Y", "we need Z"), even when the request already looks fully specified or the code is not in the workspace, because Stage 0 restates it as acceptance criteria and asks the fork questions before any code is written. Skip only for one-line fixes, typos, and config tweaks.
 ---
 
 # Feature pipeline

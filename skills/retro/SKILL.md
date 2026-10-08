@@ -1,6 +1,6 @@
 ---
 name: retro
-description: Self-improvement loop — turn recurring mistakes and friction from recent work into a durable fix (a CLAUDE.md rule, a new/updated skill, or an ADR). Use at the end of a rough slice, when the same correction keeps recurring, or on demand so lessons compound instead of being re-learned. Ends with a prune pass — run only after approved changes are applied — that retires rules/skills the changes made stale.
+description: Self-improvement loop that turns recurring mistakes and friction into a durable fix (a CLAUDE.md rule, a new or updated skill, a hook, or an ADR), proposed item by item for the user's approval and never applied silently. Use whenever the user reports that a mistake keeps happening or asks how to stop it ("you did it again", "this is the third time", "what should change so this stops happening", "how do we prevent this", "make this a rule"), at the end of a rough slice, or on demand. Ends with a prune pass (only after approved changes are applied) that retires rules and skills the changes made stale.
 ---
 
 # Retro — the self-improvement loop
