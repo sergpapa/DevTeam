@@ -1,6 +1,6 @@
 ---
 name: project
-description: Whole-system pipeline — take a product idea from conception to a working v1 across many sessions: discovery → architecture → scaffold → roadmap → repeated /feature slices. Use when starting a new app/system, or resuming one (it picks up from docs/roadmap.md).
+description: "Whole-system pipeline — take a product idea from conception to a working v1 across many sessions: discovery → architecture → scaffold → roadmap → repeated /feature slices. Use when starting a new app/system, or resuming one (it picks up from docs/roadmap.md)."
 ---
 
 # Project pipeline
