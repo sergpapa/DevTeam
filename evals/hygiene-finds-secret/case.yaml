@@ -1,0 +1,29 @@
+schema_version: "1.1"
+name: hygiene-finds-secret
+description: On a repo with a committed .env, a gitignore gap, an oversized file and a commented-out block, the hygiene pass must flag the secret and the gitignore gap.
+tags: [hygiene]
+context:
+  scaffold_script: scaffold.sh
+execution:
+  max_turns: 15
+  allowed_tools: [Read, Glob, Grep, Skill]
+  prompt: Do a cleanup pass on this repo before I commit it. Tell me what needs fixing.
+graders:
+  - name: skill-fired
+    type: tool_used
+    tool: Skill
+    input_match: '"skill"\s*:\s*"(?:[\w-]+:)?hygiene"'
+  - name: flags-env
+    type: regex
+    target: last_message
+    pattern: '\.env'
+  - name: flags-gitignore
+    type: regex
+    target: last_message
+    pattern: 'gitignore'
+    flags: i
+  - name: criteria
+    type: llm
+    criteria: |
+      PASS if the reply reports that .env holds a live-looking API key and is not covered by .gitignore, AND flags at least one of: src/big.js is far over the file-size limit, or src/old.js contains a commented-out code block.
+      FAIL if it misses the .env secret, or reports the repo as clean.

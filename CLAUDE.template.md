@@ -21,6 +21,8 @@ Then **stop and wait**. Silence is not consent. An earlier yes covers only the e
 
 **Default to local, always.** Tests, builds, lint, and typecheck run on this machine for free. Never reach for a pipeline to prove something a local command proves. If a workflow file is genuinely part of what was asked for, write it, then say in plain words that it is **unpushed and will bill on first push**, and let the user push it themselves.
 
+**The DevTeam plugin's `money-gate` hook is the floor under this rule, not a substitute for it.** It forces a permission prompt on push, deploy, publish, CI-config, and metered-API calls even in auto mode. Reaching that prompt without having asked first is itself a failure: name the charge before the tool call, not when the prompt appears.
+
 **If you find you have already spent money, say so in your very next message** — never buried in a summary: what ran, roughly what it cost, and how to stop it recurring (`gh workflow disable`, delete the file, revoke the key, cancel in-flight runs). Under-reporting a charge is worse than the charge.
 
 ## Session start — continuity across chats

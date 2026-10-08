@@ -1,6 +1,6 @@
 # DevTeam — an agent team for Claude Code
 
-A lean, credit-efficient development pipeline: **3 agents + 9 skills + a house voice**, orchestrated by the main Claude Code session.
+A lean, credit-efficient development pipeline: **3 agents + 9 skills + a house voice + one hook**, orchestrated by the main Claude Code session.
 
 ## Design philosophy
 
@@ -30,6 +30,7 @@ Sources for this shape: Anthropic's [Building effective agents](https://www.anth
 | `/adr` | skill | — | Record decisions in `docs/adr/` | any stack/structure decision |
 | `/hygiene` | skill | — | File placement/size, dead code, gitignore, secrets, doc freshness | before committing |
 | `Plain` | output style | — | How answers read: answer first, plain language, no filler — and the evidence (errors, security findings, test failures) never compressed | every response, automatically, whenever the plugin is enabled |
+| `money-gate` | hook | — | Mechanical floor under the money rule: any tool call that can bill (push, Actions, deploy, publish, CI config, metered model API) gets a permission prompt naming the charge, even in auto mode | every matching tool call, automatically |
 | `graphify` | external tool (optional) | — | Context engine: local knowledge graph of the codebase; structural questions go to the graph instead of file reads | codebases past ~50 source files |
 
 Plus [CLAUDE.template.md](CLAUDE.template.md) — the standards file you install as your `CLAUDE.md`, loaded automatically every session (the money hard-stop, testing rules, code standards, definition of done).
@@ -49,6 +50,17 @@ Jargon is glossed, not laundered: the real term stays (you need it to search the
 It ships with `force-for-plugin: true`, which means it applies whenever the plugin is enabled and **overrides your `outputStyle` setting**. If you would rather choose your style per project, set that field to `false` in the file and pick `Plain` yourself from `/config`.
 
 Output styles don't reach subagents — they run their own system prompts — so the same floor is restated as a **Voice** section in [CLAUDE.template.md](CLAUDE.template.md) and as one line in each agent's report format.
+
+## Mechanical floor: the money-gate hook
+
+Everything else in this plugin is a prompt, which holds only as long as the model remembers it. The money rule is the one place where a slip costs real money, so it also gets a mechanical check: [hooks/money-gate.sh](hooks/money-gate.sh), registered as a `PreToolUse` hook in [hooks/hooks.json](hooks/hooks.json).
+
+- **What it watches.** `Bash` and `PowerShell` commands for `git push` (not `--dry-run`), `gh workflow run|enable`, `gh run rerun`, `gh pr create|merge`, anything touching `.github/workflows`, deploy and provisioning CLIs (`vercel`, `netlify deploy`, `wrangler deploy`, `fly deploy`, `docker push`, `terraform apply`, `pulumi up`, `cdk|sam|serverless|firebase deploy`, `railway up`, `heroku create`, `supabase … deploy|push`, `aws … create|run|start|put|deploy|invoke`, `gcloud … deploy|create|submit`, `az … create`), package publishing (`npm|pnpm|yarn|cargo publish`, `twine upload`, `gem|nuget push`), and calls to metered model APIs (`api.openai.com`, `api.anthropic.com`, …). `Write`/`Edit` calls whose path is a CI/CD config (`.github/workflows/`, `.gitlab-ci.yml`, `.circleci/`, `Jenkinsfile`, `azure-pipelines.yml`, `bitbucket-pipelines.yml`, `.buildkite/`, `.travis.yml`, `cloudbuild.yml`).
+- **What it does on a match.** Returns `permissionDecision: "ask"` with a reason that names the meter. Claude Code then shows you a permission prompt labelled `[plugin:devteam]`, even in auto mode. In a headless `claude -p` run there is nobody to ask, so the call is denied and Claude reads the reason — which is the right outcome unattended.
+- **What it never does.** It never approves anything and never denies on its own, because the rule asks for *explicit per-instance approval*, and the prompt is exactly that. The CLAUDE.md rule stays the ceiling: Claude is supposed to name the charge *before* the tool call, so reaching this prompt without having asked first is itself a failure. For a hard wall, add a deny rule in your settings, e.g. `"deny": ["Bash(git push*)"]`.
+- **False positives** cost one click (`vercel dev` and `wrangler dev` are let through; `mkdir .github/workflows` is not). They are cheaper than the one true positive the prompt rule missed.
+- **Requirements.** POSIX `sh`, `grep -E`, `sed` — present on macOS, Linux, and in Git Bash, which Claude Code on Windows already requires. No jq, no node.
+- **Testing it.** Feed it a hook payload: `printf '{"tool_name":"Bash","tool_input":{"command":"git push"}}' | sh hooks/money-gate.sh` prints the `ask` decision; `npm test` prints nothing (no decision = normal permission flow).
 
 ## Usage
 
@@ -97,7 +109,7 @@ If Graphify isn't installed, everything degrades gracefully to the grep-first ru
 
 ## Credit-efficiency rules of thumb
 
-- **Nothing in this pipeline spends real money.** CLAUDE.md's money rule is a hard stop: no CI config, no pipeline run, no deploy, no metered API call without explicit per-instance approval that names the charge. `/project` ships a skeleton with no CI, `/feature` ends at a local commit (never a push), `/hygiene` audits billable automation without running it, `/adopt` inventories it read-only, and the architect must quote the cost surface of every choice. Local commands are free; Actions minutes are not.
+- **Nothing in this pipeline spends real money.** CLAUDE.md's money rule is a hard stop: no CI config, no pipeline run, no deploy, no metered API call without explicit per-instance approval that names the charge. `/project` ships a skeleton with no CI, `/feature` ends at a local commit (never a push), `/hygiene` audits billable automation without running it, `/adopt` inventories it read-only, and the architect must quote the cost surface of every choice. Local commands are free; Actions minutes are not. The `money-gate` hook (section above) is the mechanical floor under this: a push, deploy, publish, CI-config write, or metered-API call gets a permission prompt that names the charge, even when the model forgot to ask.
 - Skip pipeline stages that don't apply; `/feature` says to announce skips.
 - Small fixes bypass the pipeline entirely (CLAUDE.md says so).
 - Reviewer agents run on Sonnet; only the architect inherits your (likely bigger) main model, and it runs rarely.
@@ -142,3 +154,15 @@ claude --plugin-dir ./DevTeam
 ```
 
 then `/reload-plugins` after edits.
+
+### Evals: does the team actually do what it says?
+
+[evals/](evals/) holds one eval case per skill, runnable with [`claude plugin eval`](https://code.claude.com/docs/en/plugin-evals). Each case is a prompt phrased the way a user would type it (never naming the skill) plus graders: a free `tool_used` check that the right skill fired, and a `regex` or `llm` check on the reply — for example that `/feature` stops at acceptance criteria and one batch of questions instead of writing code, that `/debug` reproduces before it patches, that `/hygiene` finds the committed `.env`.
+
+```
+claude plugin eval . --runs 1 --ablation none          # cheapest: one run per case, no baseline arm
+claude plugin eval . --scaffold                         # full: 3 runs per case, with/without-plugin Δ; needed for the hygiene and adopt cases, whose scaffold.sh builds a fixture repo
+claude plugin eval . --case feature-interrogates-first  # one case
+```
+
+Every run is a real model call on your account: it counts against your plan's usage (or your API bill), and `llm` graders add three short judge calls per run. The full default run is roughly 9 cases × 3 runs × 2 arms. Start with `--runs 1 --ablation none` and read the `COST` column before scaling up. Runs get read-only tools only (`Read`, `Glob`, `Grep`, `Skill`), so cases grade the reply, not written files — and that is deliberate: native Windows has no sandbox backend, so granting `Bash`/`Write` would refuse every run there. Results land in `evals/results/` (gitignored).
