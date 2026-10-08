@@ -1,5 +1,5 @@
 ---
-description: An award-grade design request must load the edge direction: a named profile, dials, and the accessibility and performance floors.
+description: "An award-grade design request must load the edge direction: a named profile, dials, and the accessibility and performance floors."
 tags: [edge, design]
 max_turns: 10
 allowed_tools: [Read, Glob, Grep, Skill]
