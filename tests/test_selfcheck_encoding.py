@@ -94,5 +94,38 @@ class CheckEncoding(unittest.TestCase):
                          [":".join(p.split(":")[:2]) for p in problems])
 
 
+class ControlCharacters(unittest.TestCase):
+    """A typed escape such as a regex word boundary can be decoded on the way into
+    a file, leaving a raw control character that no reader sees. Slice 3 shipped
+    two such backspaces into a test and a spec (docs/specs/retro-that-runs.md).
+    Samples are built with chr() so this file never holds one itself.
+    """
+
+    def test_decoded_word_boundary_is_flagged_with_position_and_code_point(self):
+        line2 = 'r"(?i)' + chr(8) + 'local"'
+        problems = check_encoding("tests/t.py", ("x = 1" + chr(10) + line2 + chr(10)).encode("utf-8"))
+        self.assertEqual(1, len(problems), problems)
+        self.assertTrue(problems[0].startswith("tests/t.py:2:7:"), problems[0])
+        self.assertIn("U+0008", problems[0])
+
+    def test_every_other_c0_character_and_delete_are_flagged(self):
+        allowed = (9, 10, 13)
+        for code in [c for c in range(32) if c not in allowed] + [127]:
+            with self.subTest(code=code):
+                problems = check_encoding("a.md", ("ok " + chr(code) + " ok").encode("utf-8"))
+                self.assertEqual(1, len(problems), problems)
+                self.assertIn("U+%04X" % code, problems[0])
+
+    def test_tab_lf_and_crlf_pass(self):
+        text = "a" + chr(9) + "b" + chr(13) + chr(10) + "c" + chr(10)
+        self.assertEqual([], check_encoding("a.md", text.encode("utf-8")))
+
+    def test_each_control_character_is_reported(self):
+        text = "a" + chr(8) + "b" + chr(27) + chr(10) + "c" + chr(8) + chr(10)
+        problems = check_encoding("a.md", text.encode("utf-8"))
+        self.assertEqual(["a.md:1:2", "a.md:1:4", "a.md:2:2"],
+                         [":".join(p.split(":")[:3]) for p in problems])
+
+
 if __name__ == "__main__":
     unittest.main()

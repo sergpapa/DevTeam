@@ -17,6 +17,7 @@ NAME_CAP = 64
 SKILL_NAME = re.compile(r"[a-z0-9-]+")
 TRIGGER = re.compile(r"\b(use (when|whenever|for|before|after)|invoke before)\b", re.IGNORECASE)
 BOM = b"\xef\xbb\xbf"
+CONTROL = frozenset(chr(c) for c in list(range(32)) + [127] if c not in (9, 10, 13))
 
 
 def kind_of(relpath):
@@ -80,15 +81,26 @@ def _skill_rules(relpath, name, description):
 
 
 def check_encoding(relpath, data):
-    """UTF-8 without BOM, and no double-encoded characters."""
+    """UTF-8 without BOM, no double-encoded characters, no control characters.
+
+    A control character other than tab, LF or CR is almost always a typed escape
+    (a regex word boundary, say) that got decoded on its way into the file.
+    """
     if data.startswith(BOM):
         return ["%s:1: starts with a UTF-8 BOM; remove it" % relpath]
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError as e:
         return ["%s: not valid UTF-8 at byte %d; re-save the file as UTF-8" % (relpath, e.start)]
-    return ["%s:%d:%d: double-encoded '%s' should be '%s'; redo the edit that wrote it with a UTF-8-safe tool"
-            % (relpath, line, column, bad, good) for line, column, bad, good in find(text)]
+    problems = ["%s:%d:%d: double-encoded '%s' should be '%s'; redo the edit that wrote it with a UTF-8-safe tool"
+                % (relpath, line, column, bad, good) for line, column, bad, good in find(text)]
+    for number, line in enumerate(text.split(chr(10)), 1):  # splitlines() would eat VT, FF and FS-RS
+        for column, char in enumerate(line, 1):
+            if char in CONTROL:
+                problems.append("%s:%d:%d: control character U+%04X; a typed escape was probably decoded on "
+                                "the way in, so write it as an escape again (or build it with chr())"
+                                % (relpath, number, column, ord(char)))
+    return problems
 
 
 def git_files(root):
