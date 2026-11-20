@@ -1,6 +1,6 @@
 ---
 name: debug
-description: Systematic debugging (reproduce, isolate the root cause, fix the cause not the symptom, prove it with a regression test). Use whenever behaviour is wrong and the user cannot say why, especially intermittent or timing-dependent bugs ("sometimes", "about once a week", "we cannot tell why", "flaky", double-charges, races), and whenever the user says "fix it" about a bug you did not just introduce, even if a cause looks plausible on first read, because a plausible cause is a hypothesis until it is reproduced. Skip only for typos and one-line mistakes you can literally see.
+description: Systematic debugging (reproduce, isolate the root cause, fix the cause not the symptom, prove it with a regression test). Use whenever behaviour is wrong and the user cannot say why, especially intermittent or timing-dependent bugs ("sometimes", "randomly", "about once a week", "we cannot tell why", "no idea why", "flaky", double-charges, races), and whenever the user says "fix it" about a bug you did not just introduce, even if a cause looks plausible on first read, because a plausible cause is a hypothesis until it is reproduced. Skip only for typos and one-line mistakes you can literally see.
 ---
 
 # Systematic debugging

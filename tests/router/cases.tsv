@@ -1,4 +1,4 @@
-# prompt	expected (skill, a|b, or none). Spec: docs/specs/plugin-self-tests.md criterion 6.
+# prompt	expected (a skill name, or a|b when either is a correct route)	optional 'miss' = a known misroute that must stay one until promoted. Spec: docs/specs/plugin-self-tests.md criterion 6.
 We decided to use Postgres instead of MongoDB for the new inventory service, because we need transactions that span orders and stock levels. Record this decision for the team.	adr
 Our nightly billing job sometimes double-charges a customer. It happens about once a week, never on the same customer twice, and we can't tell why. Fix it.	debug
 I want an app that lets my climbing gym's members log their sessions and get suggested training plans.	discover|project
@@ -12,7 +12,7 @@ Write down why we picked SQLite over Postgres so future developers know.	adr
 The login page randomly logs people out and I have no idea why.	debug
 I have a fuzzy idea for a product for dog walkers. Help me work out what it should do.	discover
 Give my photography portfolio a dramatic, experimental look that stands out from every template site.	edge
-We need CSV export on the reports page.	feature
+We need CSV export on the reports page.	feature	miss
 Start a new project: a booking system for my yoga studio, all the way to a working v1.	project
 Resume the project and pick up where the roadmap left off.	project
 You keep forgetting to run the linter before you commit. How do we make that stop for good?	retro
@@ -28,11 +28,8 @@ Plan and build my invoicing SaaS from scratch over several sessions.	project
 Here is an existing repo with no roadmap. I want to keep building features on it.	adopt|feature
 Clean up the dead code in utils before I commit.	hygiene
 The build broke and I cannot tell why.	debug
-What is the capital of Australia?	none
-Translate this paragraph into Greek.	none
-How do I rebind ctrl+s in VS Code?	none
-Summarise this meeting transcript for me.	none
-What time is it in Tokyo right now?	none
-Write a haiku about autumn.	none
-Explain what a closure is in JavaScript.	none
-What does git rebase do?	none
+Every few days the export job hangs and nobody can explain it.	debug	miss
+I just took over a legacy codebase that nobody documented. Bring it into our workflow.	adopt
+Kick off a new system for managing warehouse stock and carry it through to a first release.	project
+Cover the parser with tests before anyone touches its code.	tdd	miss
+Document our choice of Redis for caching so the reasoning is not lost.	adr

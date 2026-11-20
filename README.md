@@ -157,6 +157,16 @@ claude --plugin-dir ./DevTeam
 
 then `/reload-plugins` after edits.
 
+Before every release, run the free self-tests next to `claude plugin validate .`:
+
+```
+python -m unittest discover -s tests -v
+```
+
+They catch what `validate` lets through. A skill whose frontmatter Claude Code cannot parse, such as an unquoted `: ` in a description, loads with no name and disappears from the skill list without an error. A `name` that does not match its folder also passes `validate`. The suite also checks that each skill description says when to use it, that each skill stays under 20 KB, and that no file holds a double-encoded character (an em dash saved as three characters of mojibake).
+
+The suite also includes a free router. It ranks the skill descriptions against [tests/router/cases.tsv](tests/router/cases.tsv), a table of prompts written the way people ask, and fails if a prompt's expected skill does not rank first. It matches words (BM25), not meaning, so it catches a description that has lost its words or that collides with another skill's. Whether a prompt should fire no skill at all needs a model, so that question belongs to the paid evals. Needs Python 3.8+ and git, nothing else. It takes about 8 seconds on Windows.
+
 ### Evals: does the team actually do what it says?
 
 [evals/](evals/) holds one eval case per skill, runnable with [`claude plugin eval`](https://code.claude.com/docs/en/plugin-evals). Each case is a prompt phrased the way a user would type it (never naming the skill) plus graders: a free `tool_used` check that the right skill fired, and a `regex` or `llm` check on the reply — for example that `/feature` stops at acceptance criteria and one batch of questions instead of writing code, that `/debug` reproduces before it patches, that `/hygiene` finds the committed `.env`.

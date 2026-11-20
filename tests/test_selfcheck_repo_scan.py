@@ -20,6 +20,9 @@ class RepoScan(unittest.TestCase):
         self.root = tempfile.mkdtemp(prefix="selfcheck-")
         self.addCleanup(shutil.rmtree, self.root, ignore_errors=True)
         subprocess.run(["git", "init", "-q", self.root], check=True)
+        # Isolate from the machine's global config (core.autocrlf=true on Windows
+        # prints an LF-to-CRLF warning for every staged file).
+        subprocess.run(["git", "-C", self.root, "config", "core.autocrlf", "false"], check=True)
 
     def write(self, relpath, text):
         path = os.path.join(self.root, *relpath.split("/"))

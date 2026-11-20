@@ -1,6 +1,6 @@
 ---
 name: adr
-description: Record an architecture/technology decision as an Architecture Decision Record in docs/adr/. Use whenever a decision is made about stack, structure, data model, dependencies, or any choice a future reader would ask "why did they do it this way?" about.
+description: Record an architecture/technology decision as an Architecture Decision Record in docs/adr/. Use whenever a decision is made about stack, structure, data model, dependencies, when someone asks to write down why one option was picked over another, or for any choice a future reader would ask "why did they do it this way?" about.
 ---
 
 # Architecture Decision Records

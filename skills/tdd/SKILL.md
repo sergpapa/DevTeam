@@ -1,6 +1,6 @@
 ---
 name: tdd
-description: Rules for writing tests before implementation — how to write tests that catch real bugs instead of tests that merely pass. Use whenever writing or modifying tests, standalone or as Stage 2 of /feature.
+description: Rules for writing tests before implementation — how to write tests that catch real bugs instead of tests that merely pass. Use whenever writing, adding or modifying tests (unit tests, failing tests first, then the implementation), standalone or as Stage 2 of /feature.
 ---
 
 # TDD rules

@@ -5,6 +5,9 @@ rank(prompt, skills) takes {name: description} and returns every skill as
 description. These cases use toy skills so they test the ranker, not the
 real descriptions (tests/test_repo.py does that).
 """
+import os
+import shutil
+import tempfile
 import unittest
 
 from selfcheck import router
@@ -65,12 +68,36 @@ class Rank(unittest.TestCase):
         self.assertEqual("greek", router.rank("\u03c3\u03c6\u03b1\u03bb\u03bc\u03ac\u03c4\u03c9\u03bd", skills)[0][0])
         self.assertEqual("ship", router.rank("v2", skills)[0][0])
 
+    def test_verb_forms_meet_and_short_stems_are_kept(self):
+        same = [("use", "used", "using", "uses"), ("code", "coded", "coding", "codes"),
+                ("file", "files", "filed"), ("commit", "committed", "committing")]
+        for forms in same:
+            with self.subTest(forms=forms):
+                self.assertEqual(1, len({tuple(router.tokens(f)) for f in forms}))
+        for word in ("speed", "string", "need"):
+            with self.subTest(word=word):
+                self.assertNotEqual([word[:-2]], router.tokens(word))
+                self.assertNotEqual([word[:-3]], router.tokens(word))
+
+    def test_load_skills_keys_by_directory_and_refuses_broken_frontmatter(self):
+        root = tempfile.mkdtemp(prefix="selfcheck-skills-")
+        self.addCleanup(shutil.rmtree, root, ignore_errors=True)
+
+        def write(directory, text):
+            os.makedirs(os.path.join(root, "skills", directory))
+            with open(os.path.join(root, "skills", directory, "SKILL.md"), "w", encoding="utf-8") as f:
+                f.write(text)
+
+        write("adr", "---\nname: adr\ndescription: Record decisions.\n---\n")
+        write("copy", "---\nname: adr\ndescription: Copied, name never changed.\n---\n")
+        self.assertEqual({"adr": "Record decisions.", "copy": "Copied, name never changed."},
+                         router.load_skills(root))
+        write("broken", "---\nname: broken\ndescription: Pipeline: a to b.\n---\n")
+        with self.assertRaisesRegex(ValueError, "broken"):
+            router.load_skills(root)
+
     def test_no_skills_gives_empty_ranking(self):
         self.assertEqual([], router.rank("record the decision", {}))
-
-    def test_threshold_is_a_positive_number(self):
-        self.assertIsInstance(router.THRESHOLD, (int, float))
-        self.assertGreater(router.THRESHOLD, 0)
 
 
 if __name__ == "__main__":

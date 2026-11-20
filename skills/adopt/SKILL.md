@@ -1,6 +1,6 @@
 ---
 name: adopt
-description: Onboard an existing codebase into the dev-team pipeline — survey the code, reconstruct docs/brief.md, retroactive ADRs, and docs/roadmap.md with an honest baseline, so /project and /feature can take it from there. Use when pointed at a project that has code but none of the docs/ state files, whether the goal is new features, cleanup, or a refactor.
+description: Onboard an existing codebase into the dev-team pipeline — survey the code, reconstruct docs/brief.md, retroactive ADRs, and docs/roadmap.md with an honest baseline, so /project and /feature can take it from there. Use when pointed at a project that has code but no docs or tests (none of the docs/ state files), or when asked to get a codebase ready before adding features to it, whether the goal is new features, cleanup, or a refactor.
 ---
 
 # Adopt an existing project

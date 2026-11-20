@@ -41,6 +41,20 @@ class FindMojibake(unittest.TestCase):
                  "\u00a9 2026 \u00bd \u00ab\u00bb \u00d7")
         self.assertEqual([], find(clean))
 
+    def test_letter_before_curly_quote_or_ellipsis_is_not_flagged(self):
+        # German and French text puts a closing quote or an ellipsis right after
+        # a letter; those pairs also decode as UTF-8 (to NKo or Arabic letters).
+        sharp_s, open_low, close, ellipsis = chr(0xdf), chr(0x201e), chr(0x201c), chr(0x2026)
+        text = ("Er sagte " + open_low + "Gru" + sharp_s + close + " und ging zur Stra" + sharp_s + ellipsis
+                + " " + chr(0xab) + "Fran" + chr(0xe7) + "ais" + chr(0xbb) + " na" + chr(0xef) + "ve" + chr(0x2019))
+        self.assertEqual([], find(text))
+
+    def test_double_encoded_greek_and_cyrillic_are_flagged(self):
+        alpha_mojibake = chr(0xce) + chr(0xb1)    # Greek small alpha
+        de_mojibake = chr(0xd0) + chr(0xb4)       # Cyrillic small de
+        self.assertEqual([(1, 1, alpha_mojibake, chr(0x3b1)), (1, 4, de_mojibake, chr(0x434))],
+                         find(alpha_mojibake + " " + de_mojibake))
+
     def test_lead_character_followed_by_ascii_is_not_flagged(self):
         self.assertEqual([], find("\u00c3x \u00e2 a \u00c2 b"))
 

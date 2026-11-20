@@ -82,6 +82,24 @@ class RejectedFrontmatter(unittest.TestCase):
     def test_plain_value_ending_in_colon(self):
         self.assertRejected(doc("name: a", "description: Steps:"), "line 3")
 
+    def test_plain_value_with_colon_then_tab(self):
+        self.assertRejected(doc("name: a", "description: Use when:" + chr(9) + "things"), "line 3", "double quotes")
+
+    def test_name_or_description_that_yaml_reads_as_null_bool_or_number(self):
+        for line in ("name: 123", "name: ~", "description: null", "description: True",
+                     "description: false", "description: 1.5", "description: -2", "description: .inf"):
+            with self.subTest(line=line):
+                key = line.split(":")[0]
+                other = "description: d" if key == "name" else "name: a"
+                self.assertRejected(doc(other, line) if key == "description" else doc(line, other),
+                                    "double quotes")
+
+    def test_quoted_number_and_other_keys_with_booleans_are_fine(self):
+        fields, errors = parse(doc('name: "123"', "description: d", "keep-coding-instructions: true",
+                                   "force-for-plugin: false"))
+        self.assertEqual([], errors)
+        self.assertEqual("123", fields["name"])
+
     def test_plain_value_with_space_hash_comment(self):
         self.assertRejected(doc("name: a", "description: Use when x #not a comment"), "line 3")
 
