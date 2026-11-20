@@ -53,9 +53,14 @@ Fix confirmed findings; push back on incorrect ones with reasoning rather than b
 ## Stage 6 — Hygiene & docs
 Run `/hygiene`. Update README/docs if behavior or setup changed. Commit.
 
-**The pipeline ends at a local commit.** Do not `git push`, open a PR, trigger a workflow, or deploy to finish a slice — a push to a branch with armed workflows spends the user's Actions minutes, and no stage above needs it to call the slice done. Hand over the commit and let the user decide. If they ask you to push, first name the charge the push will trigger (money rule, CLAUDE.md).
+**The pipeline never goes past local commits.** Do not `git push`, open a PR, trigger a workflow, or deploy to finish a slice — a push to a branch with armed workflows spends the user's Actions minutes, and no stage above needs it to call the slice done. Hand over the commit and let the user decide. If they ask you to push, first name the charge the push will trigger (money rule, CLAUDE.md).
 
 **The roadmap's `Current state` is ONE section, and you replace it — you never append a newer one.** A second section with a fresher date does not update the file, it forks it, and the next session resumes from whichever it reads first. Rewrite it in place; move the text it replaces into a dated entry in a slice log further down; and keep every still-pending deploy, migration, and UAT step in that one section rather than scattered across generations of the file. Same rule for the slice record in `docs/specs/<slug>.md`: append there, because that file is the history — the roadmap is the state.
 
+## Stage 7 — Retro check
+Run this in the main session after the Stage 6 commit, with no subagent: a cold start on every slice costs more than the check itself. Read the slice record in `docs/specs/<slug>.md` (test-guardian and review findings, refusals and their reasons) and the corrections the user made in this session. For each candidate, grep the earlier slice records in `docs/specs/` for the same kind of finding, so a mistake made once per slice still counts as recurring. Hold each candidate against `/retro`'s durable-lesson bar.
+
+When nothing clears the bar, the whole output is one line: `Retro: nothing recurred.` When something does, run `/retro` from Stage 2 with those lessons. Nothing is applied before the user approves it, and approved changes go in their own commit, never into the slice's.
+
 ## Final report to the user
-Lead with what was built and whether every stage passed. Include: acceptance criteria status, test count and coverage of the criteria, review verdicts, decisions recorded, and anything deferred or flagged. Report failures plainly — never present a partially-verified feature as done.
+Lead with what was built and whether every stage passed. Include: acceptance criteria status, test count and coverage of the criteria, review verdicts, decisions recorded, the `Retro:` line or the retro proposals, and anything deferred or flagged. Report failures plainly — never present a partially-verified feature as done.

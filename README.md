@@ -23,10 +23,10 @@ Sources for this shape: Anthropic's [Building effective agents](https://www.anth
 | `/project` | skill | — | System-level pipeline: discovery → architecture → walking skeleton → roadmap → build loop; resumes from `docs/roadmap.md` in any new chat | new app/system, or resuming one |
 | `/discover` | skill | — | Requirements discovery: interrogate the idea, research the landscape, write `docs/brief.md` | project conception / fuzzy scope |
 | `/adopt` | skill | — | Onboard an existing codebase: survey the code, reconstruct brief/ADRs/roadmap with an honest baseline, queue fixes as roadmap slices | existing project without `docs/` state files |
-| `/feature` | skill | — | The pipeline: scope → architecture → red → green → verify → review → hygiene | any non-trivial feature |
+| `/feature` | skill | — | The pipeline: scope → architecture → red → green → verify → review → hygiene → retro check | any non-trivial feature |
 | `/tdd` | skill | — | How to write tests that catch bugs, not tests that pass | whenever writing tests |
 | `/debug` | skill | — | Systematic debugging: reproduce → isolate the root cause → fix the cause → prove it with a regression test | behavior is wrong and the cause isn't obvious |
-| `/retro` | skill | — | Self-improvement loop: turn recurring mistakes into a durable rule, skill, or ADR | after a rough slice, or when a correction keeps recurring |
+| `/retro` | skill | — | Self-improvement loop: turn a lesson that clears the bar into the cheapest durable fix (test, then hook, then skill, then CLAUDE.md) | `/feature` runs the check at the end of every slice; also when a correction keeps recurring |
 | `/adr` | skill | — | Record decisions in `docs/adr/` | any stack/structure decision |
 | `/hygiene` | skill | — | File placement/size, dead code, gitignore, secrets, doc freshness | before committing |
 | `/edge` | skill | — | Award-grade design direction for user-facing UI: five laws, six dials, six named profiles (Swiss, brutalist, dark-luxury, immersive, editorial, hybrid), a free-only stack, and non-negotiable accessibility and performance floors | before designing a site or UI that should feel bold, premium, or experimental |
@@ -111,7 +111,7 @@ If Graphify isn't installed, everything degrades gracefully to the grep-first ru
 
 ## Credit-efficiency rules of thumb
 
-- **Nothing in this pipeline spends real money.** CLAUDE.md's money rule is a hard stop: no CI config, no pipeline run, no deploy, no metered API call without explicit per-instance approval that names the charge. `/project` ships a skeleton with no CI, `/feature` ends at a local commit (never a push), `/hygiene` audits billable automation without running it, `/adopt` inventories it read-only, and the architect must quote the cost surface of every choice. Local commands are free; Actions minutes are not. The `money-gate` hook (section above) is the mechanical floor under this: a push, deploy, publish, CI-config write, or metered-API call gets a permission prompt that names the charge, even when the model forgot to ask.
+- **Nothing in this pipeline spends real money.** CLAUDE.md's money rule is a hard stop: no CI config, no pipeline run, no deploy, no metered API call without explicit per-instance approval that names the charge. `/project` ships a skeleton with no CI, `/feature` never goes past local commits (never a push), `/hygiene` audits billable automation without running it, `/adopt` inventories it read-only, and the architect must quote the cost surface of every choice. Local commands are free; Actions minutes are not. The `money-gate` hook (section above) is the mechanical floor under this: a push, deploy, publish, CI-config write, or metered-API call gets a permission prompt that names the charge, even when the model forgot to ask.
 - Skip pipeline stages that don't apply; `/feature` says to announce skips.
 - Small fixes bypass the pipeline entirely (CLAUDE.md says so).
 - Reviewer agents run on Sonnet; only the architect inherits your (likely bigger) main model, and it runs rarely.
@@ -169,7 +169,7 @@ The suite also includes a free router. It ranks the skill descriptions against [
 
 ### Evals: does the team actually do what it says?
 
-[evals/](evals/) holds one eval case per skill, runnable with [`claude plugin eval`](https://code.claude.com/docs/en/plugin-evals). Each case is a prompt phrased the way a user would type it (never naming the skill) plus graders: a free `tool_used` check that the right skill fired, and a `regex` or `llm` check on the reply — for example that `/feature` stops at acceptance criteria and one batch of questions instead of writing code, that `/debug` reproduces before it patches, that `/hygiene` finds the committed `.env`.
+[evals/](evals/) holds at least one eval case per skill, runnable with [`claude plugin eval`](https://code.claude.com/docs/en/plugin-evals). Each case is a prompt phrased the way a user would type it (never naming the skill) plus graders: a free `tool_used` check that the right skill fired, and a `regex` or `llm` check on the reply — for example that `/feature` stops at acceptance criteria and one batch of questions instead of writing code, that `/debug` reproduces before it patches, that `/hygiene` finds the committed `.env`.
 
 ```
 claude plugin eval . --runs 1 --ablation none          # cheapest: one run per case, no baseline arm

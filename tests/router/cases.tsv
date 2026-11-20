@@ -33,3 +33,4 @@ I just took over a legacy codebase that nobody documented. Bring it into our wor
 Kick off a new system for managing warehouse stock and carry it through to a first release.	project
 Cover the parser with tests before anyone touches its code.	tdd	miss
 Document our choice of Redis for caching so the reasoning is not lost.	adr
+How do we stop this happening a third time? You imported from src/server into a file under src/client twice this week, and review only just caught it before server secrets reached the browser bundle.	retro

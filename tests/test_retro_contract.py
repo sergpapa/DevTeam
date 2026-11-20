@@ -95,6 +95,8 @@ class FeatureEndsWithRetroCheck(Pins):
         stage6 = section_index(self.secs, r"^stage 6")
         retro = section_index(self.secs, r"retro check")
         final = section_index(self.secs, r"final report")
+        for name, index in (("Stage 6", stage6), ("Retro check", retro), ("Final report", final)):
+            self.assertIsNotNone(index, "skills/feature/SKILL.md has no '## %s' section" % name)
         self.assertLess(stage6, retro, "the retro check must come after the Stage 6 commit")
         self.assertLess(retro, final, "the retro check must come before the final report")
 
@@ -106,6 +108,15 @@ class FeatureEndsWithRetroCheck(Pins):
         self.assertRule(self.body, "the check must read the slice record and its findings",
                         r"docs/specs/", r"review|finding", r"refus")
         self.assertPositiveRule(self.body, "the check must read the user's corrections", r"correction")
+
+    def test_counts_recurrence_across_earlier_slices(self):
+        self.assertPositiveRule(self.body, "one hit per slice must still add up: the check must search earlier slice records",
+                                r"earlier slice|previous slice|other slice", r"docs/specs/|slice record")
+
+    def test_stage_6_no_longer_claims_to_end_the_pipeline(self):
+        stage6 = section(self.secs, r"^stage 6")
+        self.assertNotRegex(stage6, r"(?i)pipeline ends at a local commit\b",
+                            "Stage 6 must not say the pipeline ends there; Stage 7 follows it")
 
     def test_applies_the_retro_bar(self):
         self.assertPositiveRule(self.body, "the check must hold candidates against /retro's bar",
@@ -159,6 +170,12 @@ class RetroBar(Pins):
                         r"existing rule|that rule", r"fail", r"\b(fix|fixes|convert|converts)\b",
                         r"instead of (adding )?a twin|rather than (adding )?a twin")
 
+    def test_a_covered_lesson_whose_rule_failed_still_clears_the_bar(self):
+        self.assertPositiveRule(self.bar, "a lesson whose existing rule failed must pass the bar, or the fix-that-rule path never runs",
+                                r"(existing rule|that rule)[^.]{0,80}(failed|fail)", r"(clears|passes) the bar|still (clears|passes)")
+        self.assertNotRegex(self.bar, r"(?i)no existing rule says it",
+                            "this wording screens out a lesson whose rule failed")
+
     def test_habit_only_wording_is_gone(self):
         self.assertNotRegex(self.text, r"(?i)\bhabit is\b", "'a habit is' contradicts the one-costly-hit clause")
         self.assertNotRegex(self.text, r"(?i)keep only the recurring",
@@ -191,6 +208,12 @@ class RetroLadder(Pins):
         self.assertGreaterEqual(len(self.items), 2, "Stage 2 has no numbered hook rung")
         self.assertRegex(self.items[1], r"(?i)lint", "the hook rung must include lint rules")
         self.assertRegex(self.items[1], r"(?i)config", "the hook rung must include config gates")
+
+    def test_hook_rung_runs_locally_and_excludes_ci(self):
+        self.assertGreaterEqual(len(self.items), 2, "Stage 2 has no numbered hook rung")
+        self.assertRegex(self.items[1], r"(?i)\blocal", "the hook rung must run on this machine")
+        self.assertRegex(self.items[1], r"(?i)\bCI\b[^.]{0,80}(not|never|bills)|(not|never)[^.]{0,40}\bCI\b",
+                         "a CI workflow is not a free rung: it bills on every push")
 
     def test_stop_at_the_first_rung_that_holds(self):
         self.assertPositiveRule(self.stage2, "the ladder must stop at the first rung that can hold the lesson",
