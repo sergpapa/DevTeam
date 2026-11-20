@@ -242,3 +242,22 @@ allow-git-checkout-branch	allow	-	-	{"tool_name": "Bash", "tool_input": {"comman
 tool-name-two-spaces	ask	can bill now	git push	{"tool_name":  "Bash","tool_input":{"command":"git push"}}
 tool-name-space-before-colon	ask	can bill now	git push	{"tool_name" : "Bash","tool_input":{"command":"git push"}}
 allow-tool-name-read-spaced	allow	-	-	{"tool_name":  "Read","tool_input":{"file_path":".github/workflows/ci.yml"}}
+# --- added after second /code-review ---
+api-url-in-variable	ask	bills now	$u = \"https://api.anthropic.com/v1/messages\"	{"tool_name": "PowerShell", "tool_input": {"command": "$u = \"https://api.anthropic.com/v1/messages\"\nInvoke-RestMethod -Uri $u -Method Post"}}
+api-body-with-semicolon	ask	bills now	c\"}' https://api.openai.com/v1/chat	{"tool_name": "Bash", "tool_input": {"command": "curl -d '{\"a\":\"b;c\"}' https://api.openai.com/v1/chat"}}
+allow-api-host-url-without-client	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "echo https://api.openai.com/v1/chat >> notes.txt"}}
+ci-quoted-url-pipe	ask	free by itself	curl \"https://raw.example.com/f?a%7Cb\" -o .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "curl \"https://raw.example.com/f?a|b\" -o .github/workflows/ci.yml"}}
+ci-single-quoted-url-amp	ask	free by itself	curl 'https://raw.example.com/f?raw%26x' -o .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "curl 'https://raw.example.com/f?raw&x' -o .github/workflows/ci.yml"}}
+ci-quoted-url-semicolon	ask	free by itself	curl \"https://raw.example.com/f%3Bv=1\" -o .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "curl \"https://raw.example.com/f;v=1\" -o .github/workflows/ci.yml"}}
+vercel-bash-c	ask	bills now	bash -c \"vercel\"	{"tool_name": "Bash", "tool_input": {"command": "bash -c \"vercel\""}}
+vercel-sh-c-single	ask	bills now	sh -c 'vercel'	{"tool_name": "Bash", "tool_input": {"command": "sh -c 'vercel'"}}
+vercel-env-prefix	ask	bills now	env FOO=1 vercel	{"tool_name": "Bash", "tool_input": {"command": "env FOO=1 vercel"}}
+allow-ls-vercel-dir	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "ls /opt/vercel"}}
+push-in-subshell	ask	can bill now	git push)	{"tool_name": "Bash", "tool_input": {"command": "(cd repo && git push)"}}
+push-in-dollar-paren	ask	can bill now	echo $(git push)	{"tool_name": "Bash", "tool_input": {"command": "echo $(git push)"}}
+push-in-backticks	ask	can bill now	x=`git push`	{"tool_name": "Bash", "tool_input": {"command": "x=`git push`"}}
+allow-pip-install-from-workflows	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "pip install -r .github/workflows/requirements.txt"}}
+allow-npm-install-workflows-path	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "npm install --prefix tools .github/workflows/scripts"}}
+ci-curl-output-dir	ask	free by itself	curl --output-dir .github/workflows -O https://x.com/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "curl --output-dir .github/workflows -O https://x.com/ci.yml"}}
+ci-wget-P	ask	free by itself	wget -P .github/workflows https://x.com/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "wget -P .github/workflows https://x.com/ci.yml"}}
+ci-curl-o-no-space	ask	free by itself	curl -o.github/workflows/ci.yml https://x.com/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "curl -o.github/workflows/ci.yml https://x.com/ci.yml"}}
