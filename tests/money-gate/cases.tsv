@@ -211,3 +211,34 @@ allow-tool-jenkinsfile-doc	allow	-	docs/Jenkinsfile.md	{"tool_name": "Write", "t
 allow-empty-stdin	allow	-	-	<empty>
 allow-empty-object	allow	-	-	{}
 allow-malformed-json	allow	-	-	{"tool_name":"Bash","tool_input":{"command":
+# --- added after /code-review: line continuations are joined, not split ---
+cont-api-backslash	ask	bills now	curl -s   https://api.openai.com/v1/chat/completions -d @r.json	{"tool_name": "Bash", "tool_input": {"command": "curl -s \\\n  https://api.openai.com/v1/chat/completions -d @r.json"}}
+cont-push-backslash	ask	can bill now	git  push origin main	{"tool_name": "Bash", "tool_input": {"command": "git \\\npush origin main"}}
+cont-gcloud-backslash	ask	bills now	gcloud run deploy svc  --source .	{"tool_name": "Bash", "tool_input": {"command": "gcloud run deploy svc \\\n--source ."}}
+cont-push-backtick	ask	can bill now	git  push origin main	{"tool_name": "PowerShell", "tool_input": {"command": "git `\npush origin main"}}
+# --- separators glued to a URL still split ---
+url-semicolon-then-push	ask	can bill now	git push	{"tool_name": "Bash", "tool_input": {"command": "curl https://x.com/ok;git push"}}
+url-newline-then-push	ask	can bill now	git push	{"tool_name": "Bash", "tool_input": {"command": "wget https://x.com/y.tgz\ncd y;git push"}}
+url-double-amp-then-push	ask	can bill now	git push	{"tool_name": "Bash", "tool_input": {"command": "curl https://x.com/?q=1&&git push"}}
+url-amp-space-then-push	ask	can bill now	git push	{"tool_name": "Bash", "tool_input": {"command": "curl https://x.com/?q=1& git push"}}
+# --- truncation never leaves a half \u escape ---
+truncate-half-unicode-escape	ask	bills now	gh workflow run deploy.yml aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...	{"tool_name": "Bash", "tool_input": {"command": "gh workflow run deploy.yml aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\u00e9"}}
+# --- case-insensitive tool names ---
+case-terraform	ask	bills now	Terraform apply -auto-approve	{"tool_name": "PowerShell", "tool_input": {"command": "Terraform apply -auto-approve"}}
+case-vercel	ask	bills now	Vercel --prod	{"tool_name": "PowerShell", "tool_input": {"command": "Vercel --prod"}}
+case-git-push	ask	can bill now	Git Push origin main	{"tool_name": "PowerShell", "tool_input": {"command": "Git Push origin main"}}
+case-workflows-write	ask	free by itself	Set-Content .GitHub/Workflows/ci.yml 'x'	{"tool_name": "PowerShell", "tool_input": {"command": "Set-Content .GitHub/Workflows/ci.yml 'x'"}}
+# --- .exe/.cmd suffixes and full paths ---
+exe-git-push	ask	can bill now	git.exe push origin main	{"tool_name": "PowerShell", "tool_input": {"command": "git.exe push origin main"}}
+path-git-push	ask	can bill now	/usr/bin/git push	{"tool_name": "Bash", "tool_input": {"command": "/usr/bin/git push"}}
+quoted-path-gh-run	ask	bills now	\"C:\\Program Files\\GitHub CLI\\gh.exe\" workflow run deploy.yml	{"tool_name": "PowerShell", "tool_input": {"command": "& \"C:\\Program Files\\GitHub CLI\\gh.exe\" workflow run deploy.yml"}}
+cmd-npm-publish	ask	no charge, but public and permanent	npm.cmd publish	{"tool_name": "PowerShell", "tool_input": {"command": "npm.cmd publish"}}
+local-bin-vercel	ask	bills now	./node_modules/.bin/vercel --prod	{"tool_name": "Bash", "tool_input": {"command": "./node_modules/.bin/vercel --prod"}}
+# --- restoring a workflow file from history writes CI config ---
+ci-git-checkout-path	ask	free by itself	git checkout main -- .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "git checkout main -- .github/workflows/ci.yml"}}
+ci-git-restore-path	ask	free by itself	git restore --source=HEAD~1 .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "git restore --source=HEAD~1 .github/workflows/ci.yml"}}
+allow-git-checkout-branch	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "git checkout -b feature/workflows-docs"}}
+# --- tool_name with unusual spacing is still recognised ---
+tool-name-two-spaces	ask	can bill now	git push	{"tool_name":  "Bash","tool_input":{"command":"git push"}}
+tool-name-space-before-colon	ask	can bill now	git push	{"tool_name" : "Bash","tool_input":{"command":"git push"}}
+allow-tool-name-read-spaced	allow	-	-	{"tool_name":  "Read","tool_input":{"file_path":".github/workflows/ci.yml"}}
