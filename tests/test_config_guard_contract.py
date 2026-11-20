@@ -99,6 +99,7 @@ class Contract(GuardCase):
         r = self.root
         cases = [payload("Bash", r, command="npm test"),
                  payload("Bash", r, command="git status"),
+                 payload("Bash", r, command="pytest -k smoke --skip-slow"),
                  payload("PowerShell", r, command="Get-ChildItem src"),
                  payload("Write", r, file_path=os.path.join(r, "src", "new.ts"), content="x"),
                  payload("Edit", r, file_path=os.path.join(r, "README.md"), old_string="Run", new_string="Use"),

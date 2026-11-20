@@ -52,6 +52,14 @@ def bypass_cases(bash, pwsh):
         ("quoted-git-exe-path", pwsh('& "C:\\Program Files\\Git\\cmd\\git.exe" commit --no-verify'), ('"C:\\Program Files\\Git\\cmd\\git.exe" commit --no-verify', SKIPS)),
         ("hookspath-unset-subcommand", bash("git config unset core.hooksPath"), ("git config unset core.hooksPath", HOOKS_PATH)),
         ("export-skip-without-git", bash("export SKIP=1; npm test"), None),
+        # found by the second /code-review
+        ("escaped-quote-in-message", bash('git commit -m "a \\"b; c" ; git commit -n'), ("git commit -n", SKIPS)),
+        ("bare-quoted-git", bash('"git" commit -n -m x'), ('"git" commit -n -m x', SKIPS)),
+        ("export-skip-second-name", bash("export CI=1 SKIP=lint; git commit -m x"), ("export CI=1 SKIP=lint", SKIPS)),
+        ("declare-x-skip", bash("declare -x SKIP=lint; git commit -m x"), ("declare -x SKIP=lint", SKIPS)),
+        ("export-bare-skip", bash("SKIP=lint; export SKIP; git commit -m x"), ("export SKIP", SKIPS)),
+        ("husky-in-message-is-prose", bash('git commit -m "docs: explain husky=0 in CI"'), None),
+        ("skip-then-quoted-git-prose", bash('export SKIP=; echo "run git status"'), None),
         # look-alikes
         ("commit-message-mentions-flags", bash('git commit -m "fix -n and --no-verify docs"'), None),
         ("commit-message-single-quoted", bash("git commit -m 'x --no-verify'"), None),
@@ -121,6 +129,10 @@ def write_cases(bash, pwsh, root):
         ("cp-with-stderr-redirect", bash("cp new.json .eslintrc.json 2>/dev/null"), ("cp new.json .eslintrc.json 2>/dev/null", "lint")),
         ("new-item-force", pwsh("New-Item -Force .eslintrc.json"), ("New-Item -Force .eslintrc.json", "lint")),
         ("clear-content", pwsh("Clear-Content .prettierrc"), ("Clear-Content .prettierrc", "formatter")),
+        # found by the second /code-review
+        ("apostrophe-in-comment", bash("# don't do this\nsed -i s/a/b/ .eslintrc.json"), ("sed -i s/a/b/ .eslintrc.json", "lint")),
+        ("escaped-apostrophe", bash("echo it\\'s; sed -i s/a/b/ .eslintrc.json"), ("sed -i s/a/b/ .eslintrc.json", "lint")),
+        ("cp-with-input-redirect", bash("cp new.json .eslintrc.json < /dev/null"), ("cp new.json .eslintrc.json < /dev/null", "lint")),
         # reads, new files, shared files and near-misses stay silent
         ("redirect-new-file", bash("echo '{}' > .stylelintrc"), None),
         ("redirect-new-nested", bash("echo '{}' > fresh/.eslintrc.json"), None),
