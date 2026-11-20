@@ -1,0 +1,213 @@
+# name	expect	cost-class	fragment	payload
+# Tab-separated. expect is ask or allow. For allow rows, cost-class and fragment are "-".
+# fragment is the text the reason must quote after "Command: `" (shell tools) or "File: `" (Write/Edit), as it appears JSON-escaped.
+#
+# --- git push: can bill now ---
+push-plain	ask	can bill now	git push	{"tool_name":"Bash","tool_input":{"command":"git push"}}
+push-in-chain	ask	can bill now	git push origin main	{"tool_name":"Bash","tool_input":{"command":"git add -A && git commit -m wip && git push origin main"}}
+push-multiline	ask	can bill now	git push -u origin feat	{"tool_name":"Bash","tool_input":{"command":"cd repo\ngit push -u origin feat"}}
+push-with-C	ask	can bill now	git -C /repo push --force	{"tool_name":"Bash","tool_input":{"command":"git -C /repo push --force"}}
+push-after-dry-run	ask	can bill now	git push origin main	{"tool_name":"Bash","tool_input":{"command":"git push --dry-run && git push origin main"}}
+push-powershell	ask	can bill now	git push	{"tool_name":"PowerShell","tool_input":{"command":"Set-Location repo; git push"}}
+# --- gh: Actions runs ---
+gh-workflow-run	ask	bills now	gh workflow run ci.yml	{"tool_name":"Bash","tool_input":{"command":"gh workflow run ci.yml"}}
+gh-run-rerun	ask	bills now	gh run rerun 12345	{"tool_name":"Bash","tool_input":{"command":"gh run rerun 12345"}}
+gh-workflow-enable	ask	bills later	gh workflow enable nightly.yml	{"tool_name":"Bash","tool_input":{"command":"gh workflow enable nightly.yml"}}
+gh-pr-create	ask	can bill now	gh pr create --fill	{"tool_name":"Bash","tool_input":{"command":"gh pr create --fill"}}
+gh-pr-merge	ask	can bill now	gh pr merge 42 --squash	{"tool_name":"Bash","tool_input":{"command":"gh pr merge 42 --squash"}}
+# --- CI config written from the shell: free by itself ---
+ci-mkdir	ask	free by itself	mkdir -p .github/workflows	{"tool_name":"Bash","tool_input":{"command":"mkdir -p .github/workflows"}}
+ci-redirect	ask	free by itself	echo on-push > .github/workflows/ci.yml	{"tool_name":"Bash","tool_input":{"command":"echo on-push > .github/workflows/ci.yml"}}
+ci-heredoc	ask	free by itself	cat > .github/workflows/ci.yml <<EOF	{"tool_name":"Bash","tool_input":{"command":"cat > .github/workflows/ci.yml <<EOF\non: push\nEOF"}}
+ci-tee	ask	free by itself	tee .github/workflows/ci.yml	{"tool_name":"Bash","tool_input":{"command":"printf on-push | tee .github/workflows/ci.yml"}}
+ci-cp-destination	ask	free by itself	cp templates/ci.yml .github/workflows/	{"tool_name":"Bash","tool_input":{"command":"cp templates/ci.yml .github/workflows/"}}
+ci-sed-in-place	ask	free by itself	sed -i s/18/20/ .github/workflows/ci.yml	{"tool_name":"Bash","tool_input":{"command":"sed -i s/18/20/ .github/workflows/ci.yml"}}
+ci-curl-output	ask	free by itself	curl -sL https://example.com/ci.yml -o .github/workflows/ci.yml	{"tool_name":"Bash","tool_input":{"command":"curl -sL https://example.com/ci.yml -o .github/workflows/ci.yml"}}
+ci-git-add	ask	free by itself	git add .github/workflows/ci.yml	{"tool_name":"Bash","tool_input":{"command":"git add .github/workflows/ci.yml"}}
+ci-ps-set-content	ask	free by itself	Set-Content -Path .github\\workflows\\ci.yml -Value $yaml	{"tool_name":"PowerShell","tool_input":{"command":"Set-Content -Path .github\\workflows\\ci.yml -Value $yaml"}}
+ci-ps-out-file	ask	free by itself	Out-File .github/workflows/ci.yml	{"tool_name":"PowerShell","tool_input":{"command":"$yaml | Out-File .github/workflows/ci.yml"}}
+ci-ps-copy-item	ask	free by itself	Copy-Item ci.yml -Destination .github/workflows/	{"tool_name":"PowerShell","tool_input":{"command":"Copy-Item ci.yml -Destination .github/workflows/"}}
+# --- CI config written by a file tool: free by itself ---
+ci-write-tool	ask	free by itself	.github/workflows/ci.yml	{"tool_name":"Write","tool_input":{"file_path":".github/workflows/ci.yml","content":"on: push"}}
+ci-edit-gitlab	ask	free by itself	.gitlab-ci.yml	{"tool_name":"Edit","tool_input":{"file_path":".gitlab-ci.yml","old_string":"a","new_string":"b"}}
+ci-write-jenkinsfile	ask	free by itself	C:\\repo\\Jenkinsfile	{"tool_name":"Write","tool_input":{"file_path":"C:\\repo\\Jenkinsfile","content":"pipeline {}"}}
+# --- deploy and provisioning: bills now ---
+deploy-vercel-prod	ask	bills now	vercel --prod	{"tool_name":"Bash","tool_input":{"command":"vercel --prod"}}
+deploy-vercel-bare	ask	bills now	vercel	{"tool_name":"Bash","tool_input":{"command":"vercel"}}
+deploy-netlify	ask	bills now	netlify deploy --prod	{"tool_name":"Bash","tool_input":{"command":"netlify deploy --prod"}}
+deploy-wrangler	ask	bills now	wrangler deploy	{"tool_name":"Bash","tool_input":{"command":"wrangler deploy"}}
+deploy-fly	ask	bills now	fly deploy	{"tool_name":"Bash","tool_input":{"command":"fly deploy"}}
+deploy-docker-push	ask	bills now	docker push ghcr.io/me/app:1	{"tool_name":"Bash","tool_input":{"command":"docker push ghcr.io/me/app:1"}}
+deploy-terraform	ask	bills now	terraform apply -auto-approve	{"tool_name":"Bash","tool_input":{"command":"terraform apply -auto-approve"}}
+deploy-pulumi	ask	bills now	pulumi up	{"tool_name":"Bash","tool_input":{"command":"pulumi up"}}
+deploy-firebase	ask	bills now	firebase deploy	{"tool_name":"Bash","tool_input":{"command":"firebase deploy"}}
+deploy-aws	ask	bills now	aws lambda invoke --function-name f out.json	{"tool_name":"Bash","tool_input":{"command":"aws lambda invoke --function-name f out.json"}}
+deploy-gcloud	ask	bills now	gcloud run deploy api --source .	{"tool_name":"Bash","tool_input":{"command":"gcloud run deploy api --source ."}}
+deploy-az	ask	bills now	az group create -n rg -l westeurope	{"tool_name":"Bash","tool_input":{"command":"az group create -n rg -l westeurope"}}
+# --- package publishing: no charge, but public and permanent ---
+publish-npm	ask	no charge, but public and permanent	npm publish	{"tool_name":"Bash","tool_input":{"command":"npm publish"}}
+publish-cargo	ask	no charge, but public and permanent	cargo publish	{"tool_name":"Bash","tool_input":{"command":"cargo publish"}}
+publish-twine	ask	no charge, but public and permanent	twine upload dist/*	{"tool_name":"Bash","tool_input":{"command":"twine upload dist/*"}}
+# --- paid model API calls: bills now ---
+api-openai-curl	ask	bills now	curl https://api.openai.com/v1/chat/completions -d @req.json	{"tool_name":"Bash","tool_input":{"command":"curl https://api.openai.com/v1/chat/completions -d @req.json"}}
+api-anthropic-curl	ask	bills now	curl -s https://api.anthropic.com/v1/messages -d @req.json	{"tool_name":"Bash","tool_input":{"command":"curl -s https://api.anthropic.com/v1/messages -d @req.json"}}
+api-anthropic-irm	ask	bills now	Invoke-RestMethod -Uri https://api.anthropic.com/v1/messages -Method Post	{"tool_name":"PowerShell","tool_input":{"command":"Invoke-RestMethod -Uri https://api.anthropic.com/v1/messages -Method Post"}}
+#
+# --- must NOT ask ---
+allow-push-dry-run	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"git push --dry-run"}}
+allow-git-status	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"git status"}}
+allow-vercel-dev	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"vercel dev"}}
+allow-wrangler-dev	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"wrangler dev"}}
+allow-npm-test	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"npm test"}}
+allow-cat-workflow	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"cat .github/workflows/ci.yml"}}
+allow-grep-workflows	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"grep -rn node-version .github/workflows"}}
+allow-grep-o-pattern	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"grep -o '\\.github/workflows' tree.json"}}
+allow-grep-count-to-file	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"grep -c '\\.github/workflows' tree.json > counts.txt"}}
+allow-ls-workflows	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"ls .github/workflows"}}
+allow-echo-mention	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"echo 'CI lives in .github/workflows'"}}
+allow-ps-get-content	allow	-	-	{"tool_name":"PowerShell","tool_input":{"command":"Get-Content .github\\workflows\\ci.yml -TotalCount 40"}}
+allow-ps-match-filter	allow	-	-	{"tool_name":"PowerShell","tool_input":{"command":"$l|?{$_ -match '^\\.github/workflows'}"}}
+allow-download-stdout	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"curl -s https://raw.githubusercontent.com/x/y/HEAD/.github/workflows/ci.yml"}}
+allow-download-redirect-elsewhere	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"curl -s https://raw.githubusercontent.com/x/y/HEAD/.github/workflows/ci.yml > research/ci.yml"}}
+allow-download-output-elsewhere	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"curl -s https://raw.githubusercontent.com/x/y/HEAD/.github/workflows/ci.yml -o research/ci.yml"}}
+allow-cp-out-of-workflows	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"cp .github/workflows/ci.yml /tmp/ci.yml"}}
+allow-write-tool-docs	allow	-	-	{"tool_name":"Write","tool_input":{"file_path":"docs/ci.md","content":"x"}}
+allow-grep-api-host	allow	-	-	{"tool_name":"Bash","tool_input":{"command":"grep -rn api.openai.com src/"}}
+# --- added after test-guardian PRE: CI writes, every verb ---
+ci-append-redirect	ask	free by itself	echo x >> .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "echo x >> .github/workflows/ci.yml"}}
+ci-redirect-no-space	ask	free by itself	echo x >.github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "echo x >.github/workflows/ci.yml"}}
+ci-redirect-quoted	ask	free by itself	echo x > \".github/workflows/ci.yml\"	{"tool_name": "Bash", "tool_input": {"command": "echo x > \".github/workflows/ci.yml\""}}
+ci-redirect-backslash	ask	free by itself	echo x > .github\\workflows\\ci.yml	{"tool_name": "Bash", "tool_input": {"command": "echo x > .github\\workflows\\ci.yml"}}
+ci-tee-append	ask	free by itself	tee -a .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "tee -a .github/workflows/ci.yml"}}
+ci-touch	ask	free by itself	touch .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "touch .github/workflows/ci.yml"}}
+ci-mv-destination	ask	free by itself	mv ci.yml .github/workflows/	{"tool_name": "Bash", "tool_input": {"command": "mv ci.yml .github/workflows/"}}
+ci-install-destination	ask	free by itself	install -m 644 ci.yml .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "install -m 644 ci.yml .github/workflows/ci.yml"}}
+ci-ln-destination	ask	free by itself	ln -s ../ci.yml .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "ln -s ../ci.yml .github/workflows/ci.yml"}}
+ci-cp-within-workflows	ask	free by itself	cp .github/workflows/a.yml .github/workflows/b.yml	{"tool_name": "Bash", "tool_input": {"command": "cp .github/workflows/a.yml .github/workflows/b.yml"}}
+ci-sed-in-place-long	ask	free by itself	sed --in-place s/a/b/ .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "sed --in-place s/a/b/ .github/workflows/ci.yml"}}
+ci-sed-i-suffix	ask	free by itself	sed -i.bak s/a/b/ .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "sed -i.bak s/a/b/ .github/workflows/ci.yml"}}
+ci-wget-O	ask	free by itself	wget -q https://x.test/ci.yml -O .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "wget -q https://x.test/ci.yml -O .github/workflows/ci.yml"}}
+ci-curl-output-long	ask	free by itself	curl https://x.test/ci.yml --output .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "curl https://x.test/ci.yml --output .github/workflows/ci.yml"}}
+ci-curl-url-has-path	ask	free by itself	curl -s https://raw.githubusercontent.com/o/r/HEAD/.github/workflows/ci.yml -o .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "curl -s https://raw.githubusercontent.com/o/r/HEAD/.github/workflows/ci.yml -o .github/workflows/ci.yml"}}
+ci-git-mv	ask	free by itself	git mv old.yml .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "git mv old.yml .github/workflows/ci.yml"}}
+ci-git-commit-path	ask	free by itself	git commit -m wip .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "git commit -m wip .github/workflows/ci.yml"}}
+ci-quoted-content	ask	free by itself	echo \"on: push\" > .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "echo \"on: push\" > .github/workflows/ci.yml"}}
+ci-tab-in-command	ask	free by itself	echo a\t> .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "echo a\t> .github/workflows/ci.yml"}}
+ci-non-ascii	ask	free by itself	echo café > .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "echo café > .github/workflows/ci.yml"}}
+ci-curl-query-ampersand	ask	free by itself	curl \"https://x.test/f?a=1%26b=2\" -o .github/workflows/ci.yml	{"tool_name": "Bash", "tool_input": {"command": "curl \"https://x.test/f?a=1&b=2\" -o .github/workflows/ci.yml"}}
+ci-ps-new-item	ask	free by itself	New-Item -ItemType File -Path .github/workflows/ci.yml	{"tool_name": "PowerShell", "tool_input": {"command": "New-Item -ItemType File -Path .github/workflows/ci.yml"}}
+ci-ps-add-content	ask	free by itself	Add-Content .github/workflows/ci.yml 'x'	{"tool_name": "PowerShell", "tool_input": {"command": "Add-Content .github/workflows/ci.yml 'x'"}}
+ci-ps-move-item	ask	free by itself	Move-Item ci.yml .github\\workflows\\	{"tool_name": "PowerShell", "tool_input": {"command": "Move-Item ci.yml .github\\workflows\\"}}
+ci-ps-copy-item-positional	ask	free by itself	Copy-Item ci.yml .github/workflows/ci.yml	{"tool_name": "PowerShell", "tool_input": {"command": "Copy-Item ci.yml .github/workflows/ci.yml"}}
+ci-ps-iwr-outfile	ask	free by itself	Invoke-WebRequest https://x.test/ci.yml -OutFile .github/workflows/ci.yml	{"tool_name": "PowerShell", "tool_input": {"command": "Invoke-WebRequest https://x.test/ci.yml -OutFile .github/workflows/ci.yml"}}
+ci-ps-set-content-lowercase	ask	free by itself	set-content .github/workflows/ci.yml 'x'	{"tool_name": "PowerShell", "tool_input": {"command": "set-content .github/workflows/ci.yml 'x'"}}
+# --- CI config via file tools, every path ---
+ci-tool-circleci	ask	free by itself	.circleci/config.yml	{"tool_name": "Write", "tool_input": {"file_path": ".circleci/config.yml", "content": "x"}}
+ci-tool-azure	ask	free by itself	azure-pipelines.yml	{"tool_name": "Write", "tool_input": {"file_path": "azure-pipelines.yml", "content": "x"}}
+ci-tool-bitbucket	ask	free by itself	bitbucket-pipelines.yml	{"tool_name": "Write", "tool_input": {"file_path": "bitbucket-pipelines.yml", "content": "x"}}
+ci-tool-buildkite	ask	free by itself	.buildkite/pipeline.yml	{"tool_name": "Write", "tool_input": {"file_path": ".buildkite/pipeline.yml", "content": "x"}}
+ci-tool-travis	ask	free by itself	.travis.yml	{"tool_name": "Write", "tool_input": {"file_path": ".travis.yml", "content": "x"}}
+ci-tool-cloudbuild-yaml	ask	free by itself	cloudbuild.yaml	{"tool_name": "Write", "tool_input": {"file_path": "cloudbuild.yaml", "content": "x"}}
+ci-tool-cloudbuild-yml	ask	free by itself	cloudbuild.yml	{"tool_name": "Write", "tool_input": {"file_path": "cloudbuild.yml", "content": "x"}}
+ci-tool-windows-path	ask	free by itself	C:\\repo\\.github\\workflows\\ci.yml	{"tool_name": "Write", "tool_input": {"file_path": "C:\\repo\\.github\\workflows\\ci.yml", "content": "x"}}
+ci-tool-gitlab-nested	ask	free by itself	sub/.gitlab-ci.yml	{"tool_name": "Write", "tool_input": {"file_path": "sub/.gitlab-ci.yml", "content": "x"}}
+ci-tool-multiedit	ask	free by itself	.github/workflows/ci.yml	{"tool_name": "MultiEdit", "tool_input": {"file_path": ".github/workflows/ci.yml", "content": "x"}}
+ci-tool-notebookedit	ask	free by itself	.github/workflows/ci.yml	{"tool_name": "NotebookEdit", "tool_input": {"file_path": ".github/workflows/ci.yml", "content": "x"}}
+# --- per-segment quoting for every rule family ---
+chain-vercel	ask	bills now	vercel --prod	{"tool_name": "Bash", "tool_input": {"command": "npm run build && vercel --prod"}}
+chain-gh-pr-merge	ask	can bill now	gh pr merge 42	{"tool_name": "Bash", "tool_input": {"command": "cd x; gh pr merge 42"}}
+chain-npm-publish	ask	no charge, but public and permanent	npm publish	{"tool_name": "Bash", "tool_input": {"command": "npm test && npm publish"}}
+chain-api-pipe	ask	bills now	curl https://api.openai.com/v1/x -d @-	{"tool_name": "Bash", "tool_input": {"command": "echo hi | curl https://api.openai.com/v1/x -d @-"}}
+chain-gh-workflow-run	ask	bills now	gh workflow run deploy.yml	{"tool_name": "Bash", "tool_input": {"command": "git pull; gh workflow run deploy.yml"}}
+chain-quoted-commit-then-push	ask	can bill now	git push	{"tool_name": "Bash", "tool_input": {"command": "git commit -m \"fix: x\" && git push"}}
+leading-space-trimmed	ask	can bill now	git push	{"tool_name": "Bash", "tool_input": {"command": "cd x;    git push"}}
+# --- ranking: the most expensive match is shown ---
+rank-push-over-ci-write	ask	can bill now	git push	{"tool_name": "Bash", "tool_input": {"command": "git add .github/workflows/ci.yml && git push"}}
+rank-deploy-over-publish	ask	bills now	vercel --prod	{"tool_name": "Bash", "tool_input": {"command": "npm publish && vercel --prod"}}
+rank-run-over-enable	ask	bills now	gh workflow run ci.yml	{"tool_name": "Bash", "tool_input": {"command": "gh workflow enable ci.yml && gh workflow run ci.yml"}}
+rank-tie-leftmost	ask	bills now	fly deploy	{"tool_name": "Bash", "tool_input": {"command": "fly deploy && wrangler deploy"}}
+rank-publish-over-ci-write	ask	no charge, but public and permanent	cargo publish	{"tool_name": "Bash", "tool_input": {"command": "mkdir -p .github/workflows; cargo publish"}}
+# --- truncation: 160 escaped chars, trailing backslash dropped, ... appended ---
+truncate-at-160	ask	can bill now	git push --push-option=\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa...	{"tool_name": "Bash", "tool_input": {"command": "git push --push-option=\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\" origin main"}}
+# --- every deploy and provisioning branch ---
+deploy-vercel-deploy	ask	bills now	vercel deploy	{"tool_name": "Bash", "tool_input": {"command": "vercel deploy"}}
+deploy-vercel-yes	ask	bills now	vercel --yes	{"tool_name": "Bash", "tool_input": {"command": "vercel --yes"}}
+deploy-vercel-y	ask	bills now	vercel -y	{"tool_name": "Bash", "tool_input": {"command": "vercel -y"}}
+deploy-netlify-deploy	ask	bills now	netlify deploy	{"tool_name": "Bash", "tool_input": {"command": "netlify deploy"}}
+deploy-wrangler-publish	ask	bills now	wrangler publish	{"tool_name": "Bash", "tool_input": {"command": "wrangler publish"}}
+deploy-wrangler-pages-deploy	ask	bills now	wrangler pages deploy dist	{"tool_name": "Bash", "tool_input": {"command": "wrangler pages deploy dist"}}
+deploy-wrangler-pages-publish	ask	bills now	wrangler pages publish dist	{"tool_name": "Bash", "tool_input": {"command": "wrangler pages publish dist"}}
+deploy-wrangler-versions-upload	ask	bills now	wrangler versions upload	{"tool_name": "Bash", "tool_input": {"command": "wrangler versions upload"}}
+deploy-flyctl-deploy	ask	bills now	flyctl deploy	{"tool_name": "Bash", "tool_input": {"command": "flyctl deploy"}}
+deploy-fly-launch	ask	bills now	fly launch	{"tool_name": "Bash", "tool_input": {"command": "fly launch"}}
+deploy-fly-scale-count	ask	bills now	fly scale count 3	{"tool_name": "Bash", "tool_input": {"command": "fly scale count 3"}}
+deploy-fly-machine-run	ask	bills now	fly machine run img	{"tool_name": "Bash", "tool_input": {"command": "fly machine run img"}}
+deploy-cdk-deploy	ask	bills now	cdk deploy	{"tool_name": "Bash", "tool_input": {"command": "cdk deploy"}}
+deploy-sam-deploy	ask	bills now	sam deploy	{"tool_name": "Bash", "tool_input": {"command": "sam deploy"}}
+deploy-serverless-deploy	ask	bills now	serverless deploy	{"tool_name": "Bash", "tool_input": {"command": "serverless deploy"}}
+deploy-sls-deploy	ask	bills now	sls deploy	{"tool_name": "Bash", "tool_input": {"command": "sls deploy"}}
+deploy-railway-up	ask	bills now	railway up	{"tool_name": "Bash", "tool_input": {"command": "railway up"}}
+deploy-heroku-create	ask	bills now	heroku create	{"tool_name": "Bash", "tool_input": {"command": "heroku create"}}
+deploy-heroku-container-push-web	ask	bills now	heroku container:push web	{"tool_name": "Bash", "tool_input": {"command": "heroku container:push web"}}
+deploy-heroku-container-release-web	ask	bills now	heroku container:release web	{"tool_name": "Bash", "tool_input": {"command": "heroku container:release web"}}
+deploy-supabase-functions-deploy	ask	bills now	supabase functions deploy f	{"tool_name": "Bash", "tool_input": {"command": "supabase functions deploy f"}}
+deploy-supabase-db-push	ask	bills now	supabase db push	{"tool_name": "Bash", "tool_input": {"command": "supabase db push"}}
+deploy-supabase-projects-create	ask	bills now	supabase projects create p	{"tool_name": "Bash", "tool_input": {"command": "supabase projects create p"}}
+deploy-aws-ec2-run-instances	ask	bills now	aws ec2 run-instances --image-id x	{"tool_name": "Bash", "tool_input": {"command": "aws ec2 run-instances --image-id x"}}
+deploy-aws-s3api-create-bucket	ask	bills now	aws s3api create-bucket --bucket b	{"tool_name": "Bash", "tool_input": {"command": "aws s3api create-bucket --bucket b"}}
+deploy-aws-ecs-update-service	ask	bills now	aws ecs update-service --service s	{"tool_name": "Bash", "tool_input": {"command": "aws ecs update-service --service s"}}
+deploy-gcloud-builds-submit	ask	bills now	gcloud builds submit	{"tool_name": "Bash", "tool_input": {"command": "gcloud builds submit"}}
+deploy-gcloud-compute-instances	ask	bills now	gcloud compute instances create vm	{"tool_name": "Bash", "tool_input": {"command": "gcloud compute instances create vm"}}
+deploy-az-vm-create	ask	bills now	az vm create -n v	{"tool_name": "Bash", "tool_input": {"command": "az vm create -n v"}}
+# --- every publish branch ---
+publish-pnpm-publish	ask	no charge, but public and permanent	pnpm publish	{"tool_name": "Bash", "tool_input": {"command": "pnpm publish"}}
+publish-yarn-publish	ask	no charge, but public and permanent	yarn publish	{"tool_name": "Bash", "tool_input": {"command": "yarn publish"}}
+publish-gem-push	ask	no charge, but public and permanent	gem push x.gem	{"tool_name": "Bash", "tool_input": {"command": "gem push x.gem"}}
+publish-nuget-push	ask	no charge, but public and permanent	nuget push x.nupkg	{"tool_name": "Bash", "tool_input": {"command": "nuget push x.nupkg"}}
+publish-dotnet-nuget	ask	no charge, but public and permanent	dotnet nuget push x.nupkg	{"tool_name": "Bash", "tool_input": {"command": "dotnet nuget push x.nupkg"}}
+# --- paid model API: every client and host ---
+api-wget-openai	ask	bills now	wget -qO- https://api.openai.com/v1/models	{"tool_name": "Bash", "tool_input": {"command": "wget -qO- https://api.openai.com/v1/models"}}
+api-httpie-anthropic	ask	bills now	https POST https://api.anthropic.com/v1/messages model=x	{"tool_name": "Bash", "tool_input": {"command": "https POST https://api.anthropic.com/v1/messages model=x"}}
+api-http-mistral	ask	bills now	http POST https://api.mistral.ai/v1/chat/completions	{"tool_name": "Bash", "tool_input": {"command": "http POST https://api.mistral.ai/v1/chat/completions"}}
+api-curl-cohere	ask	bills now	curl https://api.cohere.com/v2/chat -d @r.json	{"tool_name": "Bash", "tool_input": {"command": "curl https://api.cohere.com/v2/chat -d @r.json"}}
+api-curl-cohere-ai	ask	bills now	curl https://api.cohere.ai/v1/generate -d @r.json	{"tool_name": "Bash", "tool_input": {"command": "curl https://api.cohere.ai/v1/generate -d @r.json"}}
+api-curl-gemini	ask	bills now	curl https://generativelanguage.googleapis.com/v1beta/models/x:generateContent -d @r.json	{"tool_name": "Bash", "tool_input": {"command": "curl https://generativelanguage.googleapis.com/v1beta/models/x:generateContent -d @r.json"}}
+api-irm-openai	ask	bills now	irm https://api.openai.com/v1/models	{"tool_name": "PowerShell", "tool_input": {"command": "irm https://api.openai.com/v1/models"}}
+api-iwr-anthropic	ask	bills now	iwr -Uri https://api.anthropic.com/v1/messages -Method Post	{"tool_name": "PowerShell", "tool_input": {"command": "iwr -Uri https://api.anthropic.com/v1/messages -Method Post"}}
+api-invoke-webrequest-openai	ask	bills now	Invoke-WebRequest -Uri https://api.openai.com/v1/models	{"tool_name": "PowerShell", "tool_input": {"command": "Invoke-WebRequest -Uri https://api.openai.com/v1/models"}}
+# --- must NOT ask: added after test-guardian PRE ---
+allow-cross-seg-redirect-then-ls	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "echo hi > out.txt; ls .github/workflows"}}
+allow-cross-seg-curl-o-then-grep-api	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "curl https://example.com -o x; grep api.openai.com src/"}}
+allow-dry-run-then-echo	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "git push --dry-run; echo hi"}}
+allow-git-log-workflows	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "git log --oneline -- .github/workflows"}}
+allow-git-diff-workflows	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "git diff .github/workflows"}}
+allow-git-status-workflows	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "git status .github/workflows"}}
+allow-sed-print-workflow	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "sed -n 1,20p .github/workflows/ci.yml"}}
+allow-sed-in-place-elsewhere	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "sed -i s/a/b/ README.md"}}
+allow-sed-n-image-path	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "sed -n p .github/workflows/my-image.yml"}}
+allow-git-add-elsewhere	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "git add README.md"}}
+allow-wget-workflow-to-elsewhere	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "wget https://x.test/.github/workflows/ci.yml -O out.yml"}}
+allow-mkdir-elsewhere	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "mkdir -p research/ECC"}}
+allow-touch-elsewhere	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "touch notes.md"}}
+allow-docker-build	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "docker build -t app ."}}
+allow-terraform-plan	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "terraform plan"}}
+allow-aws-s3-ls	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "aws s3 ls"}}
+allow-gcloud-config-list	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "gcloud config list"}}
+allow-gh-pr-view	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "gh pr view 42"}}
+allow-gh-run-list	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "gh run list"}}
+allow-gh-workflow-list	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "gh workflow list"}}
+allow-npm-view	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "npm view devteam version"}}
+allow-echo-push-text	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "echo 'remember to git-push later'"}}
+allow-curl-docs-site	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "curl -s https://docs.anthropic.com/en/api"}}
+allow-ps-iwr-workflow-to-local	allow	-	-	{"tool_name": "PowerShell", "tool_input": {"command": "Invoke-WebRequest https://x.test/.github/workflows/ci.yml -OutFile local.yml"}}
+allow-ps-copy-item-out-of-workflows	allow	-	-	{"tool_name": "PowerShell", "tool_input": {"command": "Copy-Item .github\\workflows\\ci.yml -Destination C:\\x"}}
+allow-ps-select-string-workflows	allow	-	-	{"tool_name": "PowerShell", "tool_input": {"command": "Select-String -Path .github\\workflows\\*.yml -Pattern node"}}
+allow-description-mentions-path	allow	-	-	{"tool_name": "Bash", "tool_input": {"command": "ls", "description": "List .github/workflows"}}
+allow-realistic-envelope	allow	-	-	{"session_id": "s1", "transcript_path": "/t.jsonl", "cwd": "/repo", "hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_use_id": "toolu_1", "tool_input": {"command": "cat .github/workflows/ci.yml", "description": "Show CI config"}}
+ask-realistic-envelope	ask	can bill now	git push	{"session_id": "s1", "transcript_path": "/t.jsonl", "cwd": "/repo", "hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_use_id": "toolu_2", "tool_input": {"command": "git push", "description": "Push the branch"}}
+allow-read-tool-on-workflow	allow	-	-	{"tool_name": "Read", "tool_input": {"file_path": ".github/workflows/ci.yml"}}
+allow-tool-dependabot	allow	-	.github/dependabot.yml	{"tool_name": "Write", "tool_input": {"file_path": ".github/dependabot.yml", "content": "x"}}
+allow-tool-jenkinsfile-doc	allow	-	docs/Jenkinsfile.md	{"tool_name": "Write", "tool_input": {"file_path": "docs/Jenkinsfile.md", "content": "x"}}
+allow-empty-stdin	allow	-	-	<empty>
+allow-empty-object	allow	-	-	{}
+allow-malformed-json	allow	-	-	{"tool_name":"Bash","tool_input":{"command":
