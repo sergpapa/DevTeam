@@ -1,6 +1,6 @@
 # DevTeam — an agent team for Claude Code
 
-A lean, credit-efficient development pipeline: **3 agents + 10 skills + a house voice + one hook**, orchestrated by the main Claude Code session.
+A lean, credit-efficient development pipeline: **3 agents + 10 skills + a house voice + two hooks**, orchestrated by the main Claude Code session.
 
 ## Design philosophy
 
@@ -32,6 +32,7 @@ Sources for this shape: Anthropic's [Building effective agents](https://www.anth
 | `/edge` | skill | — | Award-grade design direction for user-facing UI: five laws, six dials, six named profiles (Swiss, brutalist, dark-luxury, immersive, editorial, hybrid), a free-only stack, and non-negotiable accessibility and performance floors | before designing a site or UI that should feel bold, premium, or experimental |
 | `Plain` | output style | — | How answers read: answer first, plain language, no filler — and the evidence (errors, security findings, test failures) never compressed | every response, automatically, whenever the plugin is enabled |
 | `money-gate` | hook | — | Mechanical floor under the money rule: any tool call that can bill (push, Actions, deploy, publish, CI config, metered model API) gets a permission prompt naming the charge, even in auto mode | every matching tool call, automatically |
+| `config-guard` | hook | — | Mechanical floor under "never weaken a check": changing an existing lint, formatter, type-checker, test-runner or git-hook config, or bypassing hooks (`--no-verify`, `core.hooksPath`, `HUSKY=0`), gets a permission prompt | every matching tool call, automatically |
 | `graphify` | external tool (optional) | — | Context engine: local knowledge graph of the codebase; structural questions go to the graph instead of file reads | codebases past ~50 source files |
 
 Plus [CLAUDE.template.md](CLAUDE.template.md) — the standards file you install as your `CLAUDE.md`, loaded automatically every session (the money hard-stop, testing rules, code standards, definition of done).
@@ -63,6 +64,19 @@ Everything else in this plugin is a prompt, which holds only as long as the mode
 - **Speed.** It runs on every shell call. Commands with no billable trigger word are dismissed by shell pattern matching alone (about 70–90 ms per call in Git Bash on Windows, against 500–850 ms for the previous version); commands that contain one take about 300 ms.
 - **Requirements.** POSIX `sh`, `grep -E`, `sed`, `tr` — present on macOS, Linux, and in Git Bash, which Claude Code on Windows already requires. No jq, no node.
 - **Testing it.** `sh tests/money-gate.test.sh` runs 237 cases (every rule must ask with the right segment and cost class; every known false positive must stay silent; four real commands that once raised false prompts are fixtures). It needs `node` or `python` for the JSON validity check and takes about two minutes on Windows. For a single payload: `printf '{"tool_name":"Bash","tool_input":{"command":"git push"}}' | sh hooks/money-gate.sh` prints the `ask` decision; `npm test` prints nothing (no decision = normal permission flow).
+
+## Mechanical floor: the config-guard hook
+
+The cheapest way to make a failing check pass is to change the check: add an ignore to `.eslintrc.json`, drop a rule from `[tool.ruff]`, set `"test": "echo ok"`, or commit with `--no-verify`. CLAUDE.md forbids that; [hooks/config-guard.sh](hooks/config-guard.sh) (with its slow path in [hooks/config-guard.awk](hooks/config-guard.awk)) is the mechanical check under it, registered next to the money gate in [hooks/hooks.json](hooks/hooks.json). Spec: [docs/specs/config-guard.md](docs/specs/config-guard.md).
+
+- **What it watches.**
+  - `Write`/`Edit`/`MultiEdit` on an **existing** lint, formatter, type-checker, test-runner or git-hook config, matched by exact basename in any folder (`.eslintrc*`, `eslint.config.*`, `biome.json`, `ruff.toml`, `.prettierrc*`, `.editorconfig`, `mypy.ini`, `jest.config.*`, `vitest.config.*`, `pytest.ini`, `tox.ini`, `.coveragerc`, `.pre-commit-config.yaml`, `.husky/*`, `.git/hooks/*`, and about 60 more; the full table is in the spec). Creating a config that does not exist yet passes silently, so scaffolding a new project is never interrupted.
+  - Shared files (`package.json`, `pyproject.toml`, `setup.cfg`, `Cargo.toml`, `tsconfig*.json`) ask only when the edit changes their tool-config part: the `jest`/`eslintConfig`/`prettier`/… blocks and the `test`/`lint`/`format`/`typecheck` scripts, the `[tool.ruff]`/`[tool.pytest…]`/`[flake8]`/`[lints]` sections, the `strict*`/`noImplicit*`/`skipLibCheck` keys. Bumping a dependency stays silent.
+  - Shell commands that write, move or delete an existing guarded file (`>`, `tee`, `sed -i`, `cp`/`mv`/`rm`, `Set-Content`, `Remove-Item`, `curl -o`, `chmod` on a hook, and similar), and hook bypasses: `--no-verify` on any `git` command, `git commit -n`, `core.hooksPath` set or unset, `HUSKY=0`, `LEFTHOOK=0`, `SKIP=… git`, and skipped signing.
+- **What it does on a match.** Asks, the same way the money gate does: ``File: `.eslintrc.json`. What it does: changes existing lint config. Why it matters: loosening a lint, format, type or test setting can make a failing check pass without fixing the code.`` Approve when you asked for the change. It never approves and never denies.
+- **Known misses.** Upper-case config names, shell edits of the shared files, writes from inside `python -c`/`node -e` or through variables, paths with spaces, and Vitest config kept inside `vite.config.*`.
+- **Speed.** Calls that name no guarded file and no bypass word are dismissed by shell builtins alone (about 50 ms per call in Git Bash on Windows); a matching shell command takes about 115 ms, one awk process.
+- **Testing it.** `python -m unittest discover -s tests` includes 4 config-guard modules (`tests/test_config_guard_*.py`): every basename in the spec's table, every shell form and bypass, the shared-file comparisons, and the hook contract (valid JSON, exit 0, the builtins-only fast path, the executable bit).
 
 ## Usage
 
