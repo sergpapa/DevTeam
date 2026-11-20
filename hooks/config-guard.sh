@@ -153,7 +153,7 @@ case "$input" in
 esac
 slow=
 case "$rest" in
-  *no-verify*|*[Hh][Oo][Oo][Kk][Ss][Pp][Aa][Tt][Hh]*|*[Hh][Uu][Ss][Kk][Yy]*|*[Ll][Ee][Ff][Tt][Hh][Oo][Oo][Kk]*|*[Ss][Kk][Ii][Pp]*|*gpg*|*commit*|*.husky*|*hooks*) slow=1 ;;
+  *no-verify*|*[Hh][Oo][Oo][Kk][Ss][Pp][Aa][Tt][Hh]*|*[Hh][Uu][Ss][Kk][Yy]*|*[Ll][Ee][Ff][Tt][Hh][Oo][Oo][Kk]*|*[Ss][Kk][Ii][Pp]=*|*[Ss][Kk][Ii][Pp]\ =*|*export*[Ss][Kk][Ii][Pp]*|*declare*[Ss][Kk][Ii][Pp]*|*gpg*|*commit*|*.husky*|*hooks*) slow=1 ;;
 esac
 if [ -z "$slow" ]; then
   for g in $LINT $FORMAT $TYPES $TESTS $HOOKCFG; do
