@@ -212,7 +212,7 @@ allow-empty-stdin	allow	-	-	<empty>
 allow-empty-object	allow	-	-	{}
 allow-malformed-json	allow	-	-	{"tool_name":"Bash","tool_input":{"command":
 # --- added after /code-review: line continuations are joined, not split ---
-cont-api-backslash	ask	bills now	curl -s   https://api.openai.com/v1/chat/completions -d @r.json	{"tool_name": "Bash", "tool_input": {"command": "curl -s \\\n  https://api.openai.com/v1/chat/completions -d @r.json"}}
+cont-api-backslash	ask	bills now	curl -s    https://api.openai.com/v1/chat/completions -d @r.json	{"tool_name": "Bash", "tool_input": {"command": "curl -s \\\n  https://api.openai.com/v1/chat/completions -d @r.json"}}
 cont-push-backslash	ask	can bill now	git  push origin main	{"tool_name": "Bash", "tool_input": {"command": "git \\\npush origin main"}}
 cont-gcloud-backslash	ask	bills now	gcloud run deploy svc  --source .	{"tool_name": "Bash", "tool_input": {"command": "gcloud run deploy svc \\\n--source ."}}
 cont-push-backtick	ask	can bill now	git  push origin main	{"tool_name": "PowerShell", "tool_input": {"command": "git `\npush origin main"}}
