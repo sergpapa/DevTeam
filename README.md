@@ -67,7 +67,7 @@ Everything else in this plugin is a prompt, which holds only as long as the mode
 
 ## Mechanical floor: the config-guard hook
 
-The cheapest way to make a failing check pass is to change the check: add an ignore to `.eslintrc.json`, drop a rule from `[tool.ruff]`, set `"test": "echo ok"`, or commit with `--no-verify`. CLAUDE.md forbids that; [hooks/config-guard.sh](hooks/config-guard.sh) (with its slow path in [hooks/config-guard.awk](hooks/config-guard.awk)) is the mechanical check under it, registered next to the money gate in [hooks/hooks.json](hooks/hooks.json). Spec: [docs/specs/config-guard.md](docs/specs/config-guard.md).
+The cheapest way to make a failing check pass is to change the check: add an ignore to `.eslintrc.json`, drop a rule from `[tool.ruff]`, set `"test": "echo ok"`, or commit with `--no-verify`. CLAUDE.md forbids that; [hooks/config-guard.sh](hooks/config-guard.sh) (with its slow path in three `hooks/config-guard*.awk` files) is the mechanical check under it, registered next to the money gate in [hooks/hooks.json](hooks/hooks.json). Spec: [docs/specs/config-guard.md](docs/specs/config-guard.md).
 
 - **What it watches.**
   - `Write`/`Edit`/`MultiEdit` on an **existing** lint, formatter, type-checker, test-runner or git-hook config, matched by exact basename in any folder (`.eslintrc*`, `eslint.config.*`, `biome.json`, `ruff.toml`, `.prettierrc*`, `.editorconfig`, `mypy.ini`, `jest.config.*`, `vitest.config.*`, `pytest.ini`, `tox.ini`, `.coveragerc`, `.pre-commit-config.yaml`, `.husky/*`, `.git/hooks/*`, and about 60 more; the full table is in the spec). Creating a config that does not exist yet passes silently, so scaffolding a new project is never interrupted.

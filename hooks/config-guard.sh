@@ -18,7 +18,8 @@
 # Contract: reads the PreToolUse JSON on stdin, prints one compact decision JSON
 # or nothing, always exits 0. Ordinary calls are dismissed with shell builtins
 # only (no process starts, which costs tens of ms each on Windows); the slow
-# path is one awk process running config-guard.awk next to this file.
+# path is one awk process running the three config-guard*.awk files next to
+# this file (core, shared-file comparison, shell rules).
 #
 # Known limits: see the spec's Assumptions (case-sensitive names, no shell
 # edits of shared files, no writes from inside interpreters or via variables).
@@ -138,7 +139,7 @@ if [ "$tool" != shell ]; then
     if [ "$cat" = 'git hook' ]; then why=$WHY_HOOK; else why=$WHY_CFG; fi
     ask File "$path" "changes existing $cat config" "$why"
   fi
-  verdict=$(printf '%s' "$input" | CG_MODE=shared CG_FILE="$full" CG_SHAPE="$shape" CG_TOOL="$tool" awk -f "$here/config-guard.awk")
+  verdict=$(printf '%s' "$input" | CG_MODE=shared CG_FILE="$full" CG_SHAPE="$shape" CG_TOOL="$tool" awk -f "$here/config-guard.awk" -f "$here/config-guard-shared.awk" -f "$here/config-guard-shell.awk")
   [ "$verdict" = ask ] && ask File "$path" 'changes the tool config (lint, format, type or test settings) in this file' "$WHY_CFG"
   exit 0
 fi
@@ -163,7 +164,7 @@ if [ -z "$slow" ]; then
 fi
 [ -n "$slow" ] || exit 0
 
-res=$(printf '%s' "$input" | CG_MODE=shell CG_TABLE="$TABLE" awk -f "$here/config-guard.awk")
+res=$(printf '%s' "$input" | CG_MODE=shell CG_TABLE="$TABLE" awk -f "$here/config-guard.awk" -f "$here/config-guard-shared.awk" -f "$here/config-guard-shell.awk")
 [ -n "$res" ] || exit 0
 tab=$(printf '\t')
 kind=${res%%"$tab"*}; res=${res#*"$tab"}
