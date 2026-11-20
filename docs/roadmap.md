@@ -1,11 +1,10 @@
 # DevTeam roadmap
 
 ## Current state
-2026-11-20. Plugin 2.1.0 on `main`, unreleased local commits on top. Milestone **M1**: slices 1 and 2 are done. Slice 2 (plugin self-tests) is committed locally. It is not pushed and not released, so the version is not bumped.
+2026-11-20. Plugin 2.2.0, pushed to `main`. Milestone **M1**: slices 1 and 2 are done and released.
 
 Pending that needs the user:
-- Release slice 2 when ready: bump to 2.2.0, push, then the marketplace and plugin update. The release flow's new step 0 is `python -m unittest discover -s tests -v`, next to `claude plugin validate .`.
-- Restart Claude Code after the next plugin update, then watch the first real money-gate prompt. Nobody has seen the 2.1.0 hook in a live session yet.
+- Restart Claude Code so 2.2.0 loads, then watch the first real money-gate prompt. Nobody has seen the 2.1.0 hook in a live session yet.
 - Slice 2 edited five skill descriptions: adopt, adr, debug, project and tdd. The 2026-10-08 eval baseline is no longer directly comparable for those five. A paid eval re-run (slice 11) needs its own approval with the cost stated.
 
 Next action: slice 3 (retro that runs).
