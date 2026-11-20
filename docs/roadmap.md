@@ -1,10 +1,10 @@
 # DevTeam roadmap
 
 ## Current state
-2026-11-20. Plugin 2.0.3 (version not bumped yet). Milestone **M1 — Close the gaps found in the 12-repo comparison**: slice 1 (money-gate precision) is done and committed locally; nothing is pushed.
+2026-11-20. Plugin 2.1.0, pushed to `main`. Milestone **M1 — Close the gaps found in the 12-repo comparison**: slice 1 (money-gate precision) is done and released.
 
 Pending that needs the user:
-- Push and release. The new hook only takes effect after a version bump, push, and `/plugin marketplace update devteam`. Until then the installed 2.0.3 hook (with its false positives) is still the one running. Live-session behaviour of the new hook is unverified until then.
+- Restart Claude Code after the plugin update so the 2.1.0 hook loads, then watch the first real money-gate prompt: live-session behaviour of the new hook has not been observed yet.
 - Every paid eval run (slice 11) needs its own approval with the cost stated.
 
 Next action: slice 2 (plugin self-tests: frontmatter, name/dir, trigger phrase, size cap, encoding, trigger router).
