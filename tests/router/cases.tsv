@@ -1,0 +1,38 @@
+# prompt	expected (skill, a|b, or none). Spec: docs/specs/plugin-self-tests.md criterion 6.
+We decided to use Postgres instead of MongoDB for the new inventory service, because we need transactions that span orders and stock levels. Record this decision for the team.	adr
+Our nightly billing job sometimes double-charges a customer. It happens about once a week, never on the same customer twice, and we can't tell why. Fix it.	debug
+I want an app that lets my climbing gym's members log their sessions and get suggested training plans.	discover|project
+Design the landing page for a boutique architecture studio. It should feel award-winning, bold and premium, Awwwards-style. Give me the design direction before any code.	edge
+Add password reset to our Express + Postgres app. A user types their email, gets a link, opens it, and sets a new password. Build it.	feature
+Three times this week you pushed to GitHub without asking and each push kicked off a CI run. Twice you edited a failing test instead of fixing the code under test. What should change so this stops happening?	retro
+Write vitest tests for a TypeScript function slugify(title) that lowercases, turns spaces into hyphens, strips punctuation, and collapses repeated hyphens. Then implement it.	tdd
+This project has code but no docs or tests. Get it ready so we can start adding features properly.	adopt
+Do a cleanup pass on this repo before I commit it. Tell me what needs fixing.	hygiene
+Write down why we picked SQLite over Postgres so future developers know.	adr
+The login page randomly logs people out and I have no idea why.	debug
+I have a fuzzy idea for a product for dog walkers. Help me work out what it should do.	discover
+Give my photography portfolio a dramatic, experimental look that stands out from every template site.	edge
+We need CSV export on the reports page.	feature
+Start a new project: a booking system for my yoga studio, all the way to a working v1.	project
+Resume the project and pick up where the roadmap left off.	project
+You keep forgetting to run the linter before you commit. How do we make that stop for good?	retro
+Write failing tests first for the discount calculator, then we implement it.	tdd
+I inherited this codebase and it has no documentation. Onboard it so we can use the pipeline.	adopt
+Check the repo for leaked secrets, dead code and files that are too big.	hygiene
+Fix it: checkout sometimes charges the card twice.	debug
+Add a retry button to the checkout page.	feature
+Add unit tests for the password strength checker.	tdd
+Implement the invoice PDF download for customers.	feature
+I have an idea for a new app but I am not sure what it should do yet.	discover
+Plan and build my invoicing SaaS from scratch over several sessions.	project
+Here is an existing repo with no roadmap. I want to keep building features on it.	adopt|feature
+Clean up the dead code in utils before I commit.	hygiene
+The build broke and I cannot tell why.	debug
+What is the capital of Australia?	none
+Translate this paragraph into Greek.	none
+How do I rebind ctrl+s in VS Code?	none
+Summarise this meeting transcript for me.	none
+What time is it in Tokyo right now?	none
+Write a haiku about autumn.	none
+Explain what a closure is in JavaScript.	none
+What does git rebase do?	none
