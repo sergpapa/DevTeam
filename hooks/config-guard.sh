@@ -24,6 +24,9 @@
 # edits of shared files, no writes from inside interpreters or via variables).
 
 set -f
+# Bytes, not characters, everywhere (length, cuts, patterns, awk): the hook
+# must behave the same whatever locale Claude Code starts it with.
+LC_ALL=C; export LC_ALL
 case $0 in */*|*\\*) here=${0%[/\\]*} ;; *) here=. ;; esac
 
 # The guarded basenames: the single source for both the builtin fast path and
@@ -56,6 +59,17 @@ ask() {
   subject=$2
   if [ "${#subject}" -gt 160 ]; then
     subject=$(printf '%.160s' "$subject")
+    # Never leave a UTF-8 character half-cut: count trailing continuation
+    # bytes, and drop them with their lead byte unless the character is whole.
+    cont=$(printf '[\200-\277]'); t=$subject; k=0; need=-1
+    while :; do case "$t" in *$cont) t=${t%?}; k=$((k + 1)) ;; *) break ;; esac; done
+    case "$t" in
+      *$(printf '[\300-\337]')) need=1 ;;
+      *$(printf '[\340-\357]')) need=2 ;;
+      *$(printf '[\360-\367]')) need=3 ;;
+    esac
+    if [ "$need" -ge 0 ] && [ "$k" -lt "$need" ]; then subject=${t%?}
+    elif [ "$need" -lt 0 ]; then subject=$t; fi
     # Never leave a JSON escape half-open: drop a cut \uXXXX, then lone backslashes.
     case "$subject" in *\\u|*\\u?|*\\u??|*\\u???) subject=${subject%\\u*} ;; esac
     while :; do
@@ -139,7 +153,7 @@ case "$input" in
 esac
 slow=
 case "$rest" in
-  *no-verify*|*[Hh][Oo][Oo][Kk][Ss][Pp][Aa][Tt][Hh]*|*HUSKY*|*LEFTHOOK*|*SKIP=*|*gpg*|*commit*|*.husky*|*hooks*) slow=1 ;;
+  *no-verify*|*[Hh][Oo][Oo][Kk][Ss][Pp][Aa][Tt][Hh]*|*[Hh][Uu][Ss][Kk][Yy]*|*[Ll][Ee][Ff][Tt][Hh][Oo][Oo][Kk]*|*[Ss][Kk][Ii][Pp]*|*gpg*|*commit*|*.husky*|*hooks*) slow=1 ;;
 esac
 if [ -z "$slow" ]; then
   for g in $LINT $FORMAT $TYPES $TESTS $HOOKCFG; do

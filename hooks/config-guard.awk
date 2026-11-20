@@ -125,23 +125,28 @@ function shell(   cmd, n, i, lines, k, parts, m, j, seg, s, what, cdseen) {
   if (cmd == NONE || cmd == "") return
   CWD = jraw("cwd")
   load_table()
-  # Protect escaped backslashes, join line continuations, then split on
-  # escaped newlines and on ; & |.
+  # Protect escaped backslashes, join line continuations, hide separators
+  # inside quotes, then split on escaped newlines and on ; & |.
   gsub(/\\\\/, "\002", cmd)
   gsub(/\\r\\n/, "\\n", cmd)
   gsub(/\002\\n/, " ", cmd)
   gsub(/`\\n/, " ", cmd)
+  cmd = mask_quoted(cmd)
   n = split(cmd, lines, /\\n/); NS = 0
   for (i = 1; i <= n; i++) {
     m = split(lines[i], parts, /[;&|]/)
     for (j = 1; j <= m; j++) {
-      seg = parts[j]; gsub(/\002/, "\\\\", seg)
+      seg = parts[j]
+      gsub(/\002/, "\\\\", seg); gsub(/\003/, ";", seg); gsub(/\004/, "\\&", seg)
+      gsub(/\005/, "|", seg); gsub(/\006/, "\\n", seg)
       sub(/^[ \t]+/, "", seg); sub(/[ \t]+$/, "", seg)
       if (seg != "") SEG[++NS] = seg
     }
   }
   for (k = 1; k <= NS; k++) {
     what = bypass(SEG[k])
+    if (what == "" && tolower(SEG[k]) ~ /^(export[ \t]+|set[ \t]+|\$env:)skip[ \t]*=/)
+      for (j = k + 1; j <= NS; j++) if (runs_git(SEG[j])) { what = "skips the repository's git hooks"; break }
     if (what != "") { printf "B\t%s\t%s\n", what, SEG[k]; return }
   }
   cdseen = 0
@@ -152,19 +157,49 @@ function shell(   cmd, n, i, lines, k, parts, m, j, seg, s, what, cdseen) {
   }
 }
 
+# Replace ; & | and escaped newlines inside quotes with \003-\006, so a quoted
+# commit message never splits a command. CMD is JSON-escaped with escaped
+# backslashes already hidden as \002, so \" is always a shell double quote.
+function mask_quoted(cmd,   out, i, n, c, dq, sq) {
+  out = ""; n = length(cmd); dq = sq = 0
+  for (i = 1; i <= n; i++) {
+    c = substr(cmd, i, 1)
+    if (!sq && c == "\\" && substr(cmd, i + 1, 1) == "\"") { dq = !dq; out = out "\\\""; i++; continue }
+    if (!dq && c == "'") sq = !sq
+    else if (dq || sq) {
+      if (c == ";") c = "\003"
+      else if (c == "&") c = "\004"
+      else if (c == "|") c = "\005"
+      else if (c == "\\" && substr(cmd, i + 1, 1) == "n") { c = "\006"; i++ }
+    }
+    out = out c
+  }
+  return out
+}
+
+# True when the segment runs git (bare, by path, or by a quoted path).
+function runs_git(seg,   low) {
+  low = tolower(seg)
+  gsub(/\\"[^"]*[\\\/]git(\.exe)?\\"/, "git", low)
+  gsub(/'[^']*[\\\/]git(\.exe)?'/, "git", low)
+  return low ~ /(^|[^[:alnum:]_.-])git(\.exe)?([ \t]|$)/
+}
+
 # The bypass a segment performs, as the prompt's "What it does" text, or "".
 function bypass(seg,   s, low, n, T, i, j, c, tok, after, at) {
   s = seg
+  gsub(/\\"[^"]*[\\\/][Gg][Ii][Tt](\.[Ee][Xx][Ee])?\\"/, "git", s)   # a quoted path to git is git
+  gsub(/'[^']*[\\\/][Gg][Ii][Tt](\.[Ee][Xx][Ee])?'/, "git", s)
   gsub(/\\"([^\\]|\\[^"])*\\"/, "\"\"", s)    # drop double-quoted text (escaped form)
   gsub(/'[^']*'/, "''", s)                     # drop single-quoted text
   low = tolower(s)
-  if (low ~ /(^|[^[:alnum:]_.-])git(\.exe)?([ \t]|$)/) {
+  if (runs_git(s)) {
     if (s ~ /(^|[ \t])--no-verify([ \t=]|$)/) return "skips the repository's git hooks"
     n = split(s, T, /[ \t]+/); at = 0
     for (i = 1; i <= n; i++) {
-      if (!at && T[i] ~ /(^|[\\\/])git(\.exe)?$/) { at = i; continue }
+      if (!at && tolower(T[i]) ~ /(^|[\\\/])git(\.exe)?$/) { at = i; continue }
       if (at && !after) {
-        if (T[i] == "-C" || T[i] == "-c") { i++; continue }
+        if (T[i] ~ /^(-C|-c|--git-dir|--work-tree|--namespace|--config-env|--super-prefix)$/) { i++; continue }
         if (T[i] ~ /^-/) continue
         after = T[i]; if (after != "commit") break; continue
       }
@@ -182,16 +217,19 @@ function bypass(seg,   s, low, n, T, i, j, c, tok, after, at) {
     }
     if (low ~ /-c[ \t]+core\.hookspath=/) return "points git at a different hooks folder"
     if (low ~ /(^|[ \t])config([ \t]|$)/ && low ~ /core\.hookspath/) {
-      if (low ~ /--unset/) return "points git at a different hooks folder"
+      if (low ~ /(^|[ \t])(--unset(-all)?|unset)([ \t]|$)/) return "points git at a different hooks folder"
       if (low !~ /--get/ && low ~ /core\.hookspath[ \t]+[^ \t]/) return "points git at a different hooks folder"
     }
     if (s ~ /(^|[ \t])--no-gpg-sign([ \t]|$)/ || low ~ /-c[ \t]+commit\.gpgsign=(false|0|no|off)([ \t]|$)/) return "skips commit signing"
   }
-  if (seg ~ /(^|[^[:alnum:]_])(HUSKY|LEFTHOOK)[ \t]*=[ \t]*(\\?["'])?0([^0-9]|$)/) return "turns off the hook runner"
-  if (seg ~ /(^|[ \t])SKIP=[^ \t]*[ \t]+(.*[ \t])?([^ \t]*[\\\/])?git(\.exe)?([ \t]|$)/) return "skips the repository's git hooks"
+  # Variable names: any case, because Windows environment names ignore case.
+  low = tolower(seg)
+  if (low ~ /(^|[^[:alnum:]_])(husky|lefthook)[ \t]*=[ \t]*(\\?["'])?0([^0-9]|$)/) return "turns off the hook runner"
+  if (low ~ /(^|[ \t])skip=[^ \t]*[ \t]+(.*[ \t])?([^ \t]*[\\\/])?git(\.exe)?([ \t]|$)/) return "skips the repository's git hooks"
   return ""
 }
 
+# The segment's first whitespace-separated word (the command, for cd detection).
 function first_word(seg,   T) {
   split(seg, T, /[ \t]+/)
   return T[1]
@@ -199,24 +237,28 @@ function first_word(seg,   T) {
 
 # "changes ..." / "moves or deletes ..." when the segment writes an existing
 # guarded file, else "".
-function write_hit(seg, cdseen,   s, n, T, i, start, cmd, sub1, tgt, nt, cat, k, mover) {
+function write_hit(seg, cdseen,   s, m, n, R, T, i, start, cmd, sub1, tgt, nt, cat, k, mover) {
   s = seg
   gsub(/\\\\/, "\002", s); gsub(/\\[tr]/, " ", s); gsub(/\002/, "\\\\", s)
   gsub(/[0-9]*>+/, " > ", s)
-  n = split(s, T, /[ \t]+/)
-  for (i = 1; i <= n; i++) { sub(/^(\\"|')/, "", T[i]); sub(/(\\"|')$/, "", T[i]) }
+  # Redirect targets are write targets; the rest are the command's arguments,
+  # so `cp a .eslintrc.json 2>/dev/null` still ends in the real destination.
+  m = split(s, R, /[ \t]+/); n = 0; nt = 0
+  for (i = 1; i <= m; i++) {
+    sub(/^(\\"|')/, "", R[i]); sub(/(\\"|')$/, "", R[i])
+    if (R[i] == ">") { if (i < m) { i++; sub(/^(\\"|')/, "", R[i]); sub(/(\\"|')$/, "", R[i]); TG[++nt] = R[i] } }
+    else T[++n] = R[i]
+  }
   start = 1
   while (start <= n && (T[start] == "" || T[start] ~ /^[A-Za-z_][A-Za-z0-9_]*=/)) start++
   cmd = tolower(T[start]); sub(/.*[\\\/]/, "", cmd); sub(/\.exe$/, "", cmd)
-  nt = 0
-  for (i = 1; i < n; i++) if (T[i] == ">") TG[++nt] = T[i + 1]
   if (cmd == "git") {
-    for (i = start + 1; i <= n && T[i] ~ /^-/; i++) if (T[i] == "-C" || T[i] == "-c") i++
+    for (i = start + 1; i <= n && T[i] ~ /^-/; i++) if (T[i] ~ /^(-C|-c|--git-dir|--work-tree|--namespace|--config-env|--super-prefix)$/) i++
     sub1 = T[i]
     if (sub1 == "mv" || sub1 == "rm") { for (k = i + 1; k <= n; k++) TG[++nt] = T[k]; mover = 1 }
   } else if (cmd ~ /^(mv|move-item|mi|move|ren|rename|rename-item|rm|del|erase|unlink|remove-item|ri)$/) {
     for (k = start + 1; k <= n; k++) TG[++nt] = T[k]; mover = 1
-  } else if (cmd ~ /^(tee|truncate|set-content|add-content|out-file|sc|ac)$/) {
+  } else if (cmd ~ /^(tee|truncate|set-content|add-content|out-file|sc|ac|clear-content|clc|new-item|ni)$/) {
     for (k = start + 1; k <= n; k++) TG[++nt] = T[k]
   } else if (cmd == "sed" || cmd == "perl") {
     for (k = start + 1; k <= n; k++) if (T[k] ~ /^-[A-Za-z]*i/ || T[k] ~ /^--in-place/) break
@@ -243,8 +285,12 @@ function write_hit(seg, cdseen,   s, n, T, i, start, cmd, sub1, tgt, nt, cat, k,
   return ""
 }
 
+# True for a path inside a .husky folder or .git/hooks (either separator).
 function hookpath(p) { return p ~ /(^|[\\\/])\.husky[\\\/]/ || p ~ /(^|[\\\/])\.git[\\\/]+hooks[\\\/]/ }
 
+# True when P can be opened. A relative P is resolved against the payload's
+# cwd, which is still JSON-escaped: Windows accepts its doubled backslashes.
+# An empty file counts as existing (getline returns 0, not -1).
 function exists(p,   r, line) {
   if (p !~ /^(\/|[A-Za-z]:|\\\\)/ && CWD != NONE && CWD != "") p = CWD "/" p
   r = (getline line < p)
@@ -254,6 +300,7 @@ function exists(p,   r, line) {
 
 # ---- the filename table (single source: hooks/config-guard.sh) --------------
 
+# Turn CG_TABLE's "<category> <glob>..." rows into anchored regexes (GRE/GCAT).
 function load_table(   rows, n, i, f, m, j, cat, re) {
   n = split(ENVIRON["CG_TABLE"], rows, "\n")
   for (i = 1; i <= n; i++) {
@@ -267,6 +314,7 @@ function load_table(   rows, n, i, f, m, j, cat, re) {
   }
 }
 
+# The category of path P by its exact basename ("shared" for shared files), or "".
 function classify(p,   b, i) {
   b = p; sub(/.*[\\\/]/, "", b)
   if (b ~ /\.sample$/) return ""
