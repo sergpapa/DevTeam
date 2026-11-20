@@ -42,6 +42,16 @@ def bypass_cases(bash, pwsh):
         ("gpgsign-off", bash("git -c commit.gpgsign=off commit -m x"), ("git -c commit.gpgsign=off commit -m x", SIGNING)),
         ("bypass-beats-write", bash("rm .eslintrc.json && git commit --no-verify -m x"), ("git commit --no-verify -m x", SKIPS)),
         ("two-bypasses-leftmost", bash("git commit --no-verify -m x && git push --no-verify"), ("git commit --no-verify -m x", SKIPS)),
+        # found by /code-review
+        ("message-with-semicolon-then-n", bash('git commit -m "a; b" -n'), ('git commit -m "a; b" -n', SKIPS)),
+        ("message-with-pipe-then-no-verify", bash('git commit -m "fix | x" --no-verify'), ('git commit -m "fix | x" --no-verify', SKIPS)),
+        ("husky-lowercase-powershell", pwsh("$env:husky='0'; git commit -m x"), ("$env:husky='0'", RUNNER_OFF)),
+        ("export-skip-then-commit", bash("export SKIP=eslint,mypy; git commit -m x"), ("export SKIP=eslint,mypy", SKIPS)),
+        ("powershell-skip-then-commit", pwsh("$env:SKIP='ruff'; git commit -m x"), ("$env:SKIP='ruff'", SKIPS)),
+        ("git-work-tree-commit-n", bash("git --work-tree . commit -n -m x"), ("git --work-tree . commit -n -m x", SKIPS)),
+        ("quoted-git-exe-path", pwsh('& "C:\\Program Files\\Git\\cmd\\git.exe" commit --no-verify'), ('"C:\\Program Files\\Git\\cmd\\git.exe" commit --no-verify', SKIPS)),
+        ("hookspath-unset-subcommand", bash("git config unset core.hooksPath"), ("git config unset core.hooksPath", HOOKS_PATH)),
+        ("export-skip-without-git", bash("export SKIP=1; npm test"), None),
         # look-alikes
         ("commit-message-mentions-flags", bash('git commit -m "fix -n and --no-verify docs"'), None),
         ("commit-message-single-quoted", bash("git commit -m 'x --no-verify'"), None),
@@ -107,6 +117,10 @@ def write_cases(bash, pwsh, root):
         ("set-location-then-rm", pwsh("Set-Location sub; Remove-Item .stylelintrc"), ("Remove-Item .stylelintrc", "lint")),
         ("sl-then-rm", pwsh("sl sub; Remove-Item .stylelintrc"), ("Remove-Item .stylelintrc", "lint")),
         ("two-writes-leftmost", bash("rm .eslintrc.json && rm .prettierrc"), ("rm .eslintrc.json", "lint")),
+        # found by /code-review
+        ("cp-with-stderr-redirect", bash("cp new.json .eslintrc.json 2>/dev/null"), ("cp new.json .eslintrc.json 2>/dev/null", "lint")),
+        ("new-item-force", pwsh("New-Item -Force .eslintrc.json"), ("New-Item -Force .eslintrc.json", "lint")),
+        ("clear-content", pwsh("Clear-Content .prettierrc"), ("Clear-Content .prettierrc", "formatter")),
         # reads, new files, shared files and near-misses stay silent
         ("redirect-new-file", bash("echo '{}' > .stylelintrc"), None),
         ("redirect-new-nested", bash("echo '{}' > fresh/.eslintrc.json"), None),

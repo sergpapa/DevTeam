@@ -37,15 +37,15 @@ The cheapest way to make a failing lint, format, type or test check pass is to c
    - any `git` command carrying `--no-verify`;
    - `git commit` whose short-flag cluster contains `n` before any flag that takes an argument (`-n`, `-an`, `-anm "msg"`; but `-mn` is a message, not a bypass);
    - `git -c core.hooksPath=...` on any command, and `git config` that sets or unsets `core.hooksPath` (reading it with no value, or with `--get`, is silent);
-   - `HUSKY=0` or `LEFTHOOK=0` set in the command (`VAR=0 git ...`, `export VAR=0`, PowerShell `$env:VAR = '0'` or `$env:VAR=0`): what it does is `turns off the hook runner`. `HUSKY=1` is silent;
-   - `SKIP=<hooks>` placed before a `git` command (the pre-commit framework skips the named hooks): what it does is `skips the repository's git hooks`;
+   - `HUSKY=0` or `LEFTHOOK=0` set in the command, in any letter case (`VAR=0 git ...`, `export VAR=0`, PowerShell `$env:VAR = '0'` or `$env:var=0`; Windows environment names ignore case): what it does is `turns off the hook runner`. `HUSKY=1` is silent;
+   - `SKIP=<hooks>` placed before a `git` command, or set in an earlier segment (`export SKIP=...`, `$env:SKIP=...`, `set SKIP=...`) of a command that later runs `git` (the pre-commit framework skips the named hooks): what it does is `skips the repository's git hooks`, and the prompt quotes the segment that sets it;
    - skipped signing: `--no-gpg-sign`, or `-c commit.gpgsign=false`.
 
-   The flag rules apply only to a segment that runs `git`, and `-n` only to `git commit` (`git push -n` is a dry run). `--no-gpg-sign` and `commit.gpgsign=false|0|no|off` count; `commit.gpgsign=true` is silent. The flag rules (`--no-verify`, `-n`, `hooksPath`, signing) ignore text inside single or double quotes, so `git commit -m "fix -n and --no-verify docs"` is silent. The variable rules read quoted values (`$env:HUSKY = '0'` asks). `SKIP=1 npm test` is silent: no `git` follows it.
+   `git` may be called by a quoted path (`& "C:\Program Files\Git\cmd\git.exe" commit`), and global options before the subcommand may take a separate value (`-C`, `-c`, `--git-dir`, `--work-tree`, `--namespace`, `--config-env`). `git config unset core.hooksPath` (Git 2.46+) counts like `--unset`. `;`, `&` and `|` inside quotes do not split a command into segments. The flag rules apply only to a segment that runs `git`, and `-n` only to `git commit` (`git push -n` is a dry run). `--no-gpg-sign` and `commit.gpgsign=false|0|no|off` count; `commit.gpgsign=true` is silent. The flag rules (`--no-verify`, `-n`, `hooksPath`, signing) ignore text inside single or double quotes, so `git commit -m "fix -n and --no-verify docs"` is silent. The variable rules read quoted values (`$env:HUSKY = '0'` asks). `SKIP=1 npm test` is silent: no `git` follows it.
 5. **Shell writes to an existing guarded file ask** (the same categories as criterion 1; shared files are out of scope for shell, see Assumptions). A segment counts when a guarded path token is:
    - the target of `>` or `>>`;
-   - an argument of `tee`, of `sed` / `perl` run with an in-place flag (`-i`, `-i.bak`, `--in-place`, `-pi`), of `truncate`, of `Set-Content` / `Add-Content` / `Out-File`;
-   - the last argument of `cp`, `install` or `ln`, or the `-Destination` of `Copy-Item`;
+   - an argument of `tee`, of `sed` / `perl` run with an in-place flag (`-i`, `-i.bak`, `--in-place`, `-pi`), of `truncate`, of `Set-Content` / `Add-Content` / `Out-File` / `Clear-Content` / `New-Item`;
+   - the last argument of `cp`, `install` or `ln` (redirects such as `2>/dev/null` are not arguments), or the `-Destination` of `Copy-Item`;
    - any argument of `mv`, `git mv`, `Move-Item`, `ren`, `rename` (moving a config away turns it off);
    - any argument of `rm`, `del`, `erase`, `unlink`, `Remove-Item`, `git rm`;
    - the output file of `curl` / `wget` / `Invoke-WebRequest`: the token after `-o`, `--output`, `--output-document`, `-OutFile`, or wget's `-O`, or the value of `--output=` / `--output-document=`. curl's `-O` (save under the remote name) names no local path and is not counted;
@@ -54,7 +54,7 @@ The cheapest way to make a failing lint, format, type or test check pass is to c
    Surrounding single or double quotes on a token are ignored, `>` needs no spaces around it (`echo x>.eslintrc.json`), and tokens may use `/` or `\`. A shared file (criterion 3) written from the shell is silent. A relative token is resolved against the payload's `cwd`. If an earlier segment of the same command changes directory (`cd`, `pushd`, `Set-Location`, `sl`), the file is assumed to exist and the hook asks. Reads (`cat`, `grep`, `Get-Content`, `cp .eslintrc.json backup/`) never ask.
 6. **Every prompt is decidable on its own.** The output is one compact JSON line: `{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"..."}}`. The reason reads, in this order:
    - `DevTeam config guard.`
-   - `File: \`<path as given>\`` for file tools, or `Command: \`<segment>\`` for shell (trimmed, at most 160 characters JSON-escaped, cut the same way the money gate cuts);
+   - `File: \`<path as given>\`` for file tools, or `Command: \`<segment>\`` for shell (trimmed; a subject over 160 bytes of JSON-escaped text is cut to at most 160 bytes, never inside a JSON escape or a UTF-8 character, and `...` is appended);
    - `What it does: ...` naming the category word from criterion 1 (`lint`, `formatter`, `type-checker`, `test-runner`, `git hook`), or `tool config` for a shared file, or for a bypass one of: `skips the repository's git hooks`, `points git at a different hooks folder`, `turns off the hook runner`, `skips commit signing`;
    - `Why it matters: ...` one sentence on how this can make a failing check pass without fixing the code;
    - `Approve only if you asked for this change; otherwise deny and ask Claude why it did it.`

@@ -11,7 +11,7 @@ import shutil
 import subprocess
 import unittest
 
-from configguard.harness import GuardCase, HOOK, ROOT, make_project, payload, reason_of, run_all, run_hook
+from configguard.harness import GuardCase, HOOK, ROOT, SH, make_project, payload, reason_of, run_all, run_hook
 
 
 def quoted_subject(out):
@@ -74,6 +74,25 @@ class Contract(GuardCase):
                     shown = subject[:-3]
                     self.assertTrue(cmd.startswith(shown), "the cut text must be a prefix of the command")
                     self.assertLessEqual(len(json.dumps(shown, ensure_ascii=False)) - 2, 160)
+
+    def test_cut_never_splits_a_utf8_character(self):
+        # Found by /code-review: a byte cut inside a multibyte character made the
+        # output undecodable, so Claude Code dropped the decision.
+        for n in range(4):  # shift where byte 160 lands relative to the 2-byte letters
+            d = os.path.join(self.root, "u" + "p" * n, "αβγδεζηθ" * 10)
+            os.makedirs(d, exist_ok=True)
+            target = os.path.join(d, ".eslintrc.json")
+            with open(target, "w", encoding="utf-8") as f:
+                f.write("{}\n")
+            # LC_ALL=C: Claude Code may run hooks with no UTF-8 locale, where printf counts bytes.
+            proc = subprocess.run([SH, HOOK], input=payload("Write", self.root, file_path=target, content="x").encode("utf-8"),
+                                  capture_output=True, timeout=60, env=dict(os.environ, LC_ALL="C"))
+            with self.subTest(n=n):
+                self.assertEqual(proc.returncode, 0)
+                out = proc.stdout.decode("utf-8")  # strict: invalid UTF-8 raises here
+                subject = reason_of(out).split("File: `", 1)[1].split("`. What it does: ", 1)[0]
+                self.assertTrue(subject.endswith("..."), subject)
+                self.assertTrue(target.startswith(subject[:-3]), "the cut text must be a prefix of the path")
 
     def test_ordinary_calls_use_builtins_only(self):
         env = dict(os.environ, PATH="")
