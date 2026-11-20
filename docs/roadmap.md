@@ -1,16 +1,18 @@
 # DevTeam roadmap
 
 ## Current state
-2026-11-20. Plugin 2.0.3. Working on milestone **M1 — Close the gaps found in the 12-repo comparison**, slice 1 (money-gate precision). Spec: `docs/specs/money-gate-precision.md`.
+2026-11-20. Plugin 2.0.3 (version not bumped yet). Milestone **M1 — Close the gaps found in the 12-repo comparison**: slice 1 (money-gate precision) is done and committed locally; nothing is pushed.
 
-Pending that needs the user: every paid eval run (slice 11) needs its own approval with the cost stated. Nothing is pushed until the user says so.
+Pending that needs the user:
+- Push and release. The new hook only takes effect after a version bump, push, and `/plugin marketplace update devteam`. Until then the installed 2.0.3 hook (with its false positives) is still the one running. Live-session behaviour of the new hook is unverified until then.
+- Every paid eval run (slice 11) needs its own approval with the cost stated.
 
-Next action: finish slice 1 (tests → implementation → review → commit), then slice 2.
+Next action: slice 2 (plugin self-tests: frontmatter, name/dir, trigger phrase, size cap, encoding, trigger router).
 
 ## M1 — Close the gaps found in the 12-repo comparison
 Source: the 2026-11-20 comparison of DevTeam against 12 agent/skill repos (superpowers, mattpocock/skills, compound-engineering, ECC, gstack, wshobson/agents, anthropics/skills, addyosmani/agent-skills, taste-skill, cloudflare/security-audit-skill, caveman, Claude-BugHunter). The user approved every slice below.
 
-- [ ] 1. **Money-gate precision.** CI rule fires only on writes; per-segment matching; paid-API rule only on network calls; every prompt names the command, what it does, and the cost class; local regression suite including the four 2026-11-20 false positives.
+- [x] 1. **Money-gate precision.** CI rule fires only on writes; per-segment matching; paid-API rule only on network calls; every prompt names the command, what it does, and the cost class; local regression suite including the four 2026-11-20 false positives.
 - [ ] 2. **Plugin self-tests.** Strict frontmatter parse, name matches directory, "Use when" trigger present, 20 KB skill-size cap, double-encoding detector, free trigger-router test over the skill descriptions (no model calls).
 - [ ] 3. **Retro that runs.** `/feature` ends with a retro check (one line when nothing recurred); retro adopts the durable-lesson bar and the cheapest-form ladder (test or hook before prose).
 - [ ] 4. **Config-protection hook.** Block edits to lint, formatter, and test-runner config and `--no-verify` / hooks-path bypasses.
@@ -26,3 +28,4 @@ Deferred, with reasons recorded in the comparison: autonomous plan executor (nee
 
 ## Slice log
 - 2026-11-20: roadmap created from the 12-repo comparison.
+- 2026-11-20: slice 1 done. 237-case suite (`sh tests/money-gate.test.sh`), all passing; two /code-review rounds; one test expectation corrected with user approval; heredoc bodies recorded as a known limit. Ordinary commands now cost ~70–90 ms in the hook instead of 500–850 ms.
