@@ -37,30 +37,32 @@ The cheapest way to make a failing lint, format, type or test check pass is to c
    - any `git` command carrying `--no-verify`;
    - `git commit` whose short-flag cluster contains `n` before any flag that takes an argument (`-n`, `-an`, `-anm "msg"`; but `-mn` is a message, not a bypass);
    - `git -c core.hooksPath=...` on any command, and `git config` that sets or unsets `core.hooksPath` (reading it with no value, or with `--get`, is silent);
-   - `HUSKY=0` or `LEFTHOOK=0` set in the command (`VAR=0 git ...`, `export VAR=0`, PowerShell `$env:VAR = '0'` or `$env:VAR=0`), and `SKIP=<hooks>` placed before a `git` command;
+   - `HUSKY=0` or `LEFTHOOK=0` set in the command (`VAR=0 git ...`, `export VAR=0`, PowerShell `$env:VAR = '0'` or `$env:VAR=0`): what it does is `turns off the hook runner`. `HUSKY=1` is silent;
+   - `SKIP=<hooks>` placed before a `git` command (the pre-commit framework skips the named hooks): what it does is `skips the repository's git hooks`;
    - skipped signing: `--no-gpg-sign`, or `-c commit.gpgsign=false`.
 
-   The flag rules (`--no-verify`, `-n`, `hooksPath`, signing) ignore text inside single or double quotes, so `git commit -m "fix -n and --no-verify docs"` is silent. The variable rules read quoted values (`$env:HUSKY = '0'` asks). `SKIP=1 npm test` is silent: no `git` follows it.
+   The flag rules apply only to a segment that runs `git`, and `-n` only to `git commit` (`git push -n` is a dry run). `--no-gpg-sign` and `commit.gpgsign=false|0|no|off` count; `commit.gpgsign=true` is silent. The flag rules (`--no-verify`, `-n`, `hooksPath`, signing) ignore text inside single or double quotes, so `git commit -m "fix -n and --no-verify docs"` is silent. The variable rules read quoted values (`$env:HUSKY = '0'` asks). `SKIP=1 npm test` is silent: no `git` follows it.
 5. **Shell writes to an existing guarded file ask** (the same categories as criterion 1; shared files are out of scope for shell, see Assumptions). A segment counts when a guarded path token is:
    - the target of `>` or `>>`;
    - an argument of `tee`, of `sed` / `perl` run with an in-place flag (`-i`, `-i.bak`, `--in-place`, `-pi`), of `truncate`, of `Set-Content` / `Add-Content` / `Out-File`;
    - the last argument of `cp`, `install` or `ln`, or the `-Destination` of `Copy-Item`;
    - any argument of `mv`, `git mv`, `Move-Item`, `ren`, `rename` (moving a config away turns it off);
    - any argument of `rm`, `del`, `erase`, `unlink`, `Remove-Item`, `git rm`;
-   - the output of `curl` / `wget` / `Invoke-WebRequest` (`-o`, `--output`, `-O` with an explicit name is not counted, `--output-document`, `-OutFile`);
+   - the output file of `curl` / `wget` / `Invoke-WebRequest`: the token after `-o`, `--output`, `--output-document`, `-OutFile`, or wget's `-O`, or the value of `--output=` / `--output-document=`. curl's `-O` (save under the remote name) names no local path and is not counted;
    - an argument of `chmod` when the path is inside `.git/hooks` or `.husky`.
 
-   A relative token is resolved against the payload's `cwd`. If an earlier segment of the same command changes directory (`cd`, `pushd`, `Set-Location`, `sl`), the file is assumed to exist and the hook asks. Reads (`cat`, `grep`, `Get-Content`, `cp .eslintrc.json backup/`) never ask.
+   Surrounding single or double quotes on a token are ignored, `>` needs no spaces around it (`echo x>.eslintrc.json`), and tokens may use `/` or `\`. A shared file (criterion 3) written from the shell is silent. A relative token is resolved against the payload's `cwd`. If an earlier segment of the same command changes directory (`cd`, `pushd`, `Set-Location`, `sl`), the file is assumed to exist and the hook asks. Reads (`cat`, `grep`, `Get-Content`, `cp .eslintrc.json backup/`) never ask.
 6. **Every prompt is decidable on its own.** The output is one compact JSON line: `{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"..."}}`. The reason reads, in this order:
    - `DevTeam config guard.`
    - `File: \`<path as given>\`` for file tools, or `Command: \`<segment>\`` for shell (trimmed, at most 160 characters JSON-escaped, cut the same way the money gate cuts);
    - `What it does: ...` naming the category word from criterion 1 (`lint`, `formatter`, `type-checker`, `test-runner`, `git hook`), or `tool config` for a shared file, or for a bypass one of: `skips the repository's git hooks`, `points git at a different hooks folder`, `turns off the hook runner`, `skips commit signing`;
    - `Why it matters: ...` one sentence on how this can make a failing check pass without fixing the code;
    - `Approve only if you asked for this change; otherwise deny and ask Claude why it did it.`
+   - The parts are joined exactly like the money gate: `DevTeam config guard. File: \`x\`. What it does: ... . Why it matters: ... . Approve only ...` (each part ends with `. `). The category word or bypass phrase appears as a whole word: `formatter` is the word, not `formatters`.
    - When a shell command matches several rules, a bypass wins over a file write; ties go to the leftmost segment.
 7. **Output stays valid JSON** for any input, and the hook always exits 0. Empty, `{}`, or malformed stdin produces no output.
 8. **Ordinary calls stay cheap.** A Write/Edit whose basename is not guarded or shared, and a shell command that names no guarded file and no bypass word, are dismissed by shell builtins alone: run with an empty `PATH`, the hook prints nothing on stdout or stderr.
-9. **Wired and documented.** `hooks/hooks.json` registers `hooks/config-guard.sh` as a second `PreToolUse` hook for `Bash|PowerShell|Write|Edit|MultiEdit`; the money gate's entry is unchanged. The README describes the hook next to the money gate.
+9. **Wired and documented.** `hooks/hooks.json` registers `hooks/config-guard.sh` as a second `PreToolUse` hook (`type: command`, with a `timeout`) for `Bash|PowerShell|Write|Edit|MultiEdit`; the money gate's entry is unchanged. The script starts with `#!/bin/sh` and is committed executable (mode `100755`), because Claude Code runs it directly. The README describes the hook next to the money gate.
 10. **A local test suite** (`tests/test_config_guard_*.py` with helpers in `tests/configguard/`, run by `python -m unittest discover -s tests`) covers every rule above as must-ask with its fragment, every listed non-case as must-not-ask, and works on Windows paths.
 
 ## Assumptions
@@ -79,3 +81,4 @@ The cheapest way to make a failing lint, format, type or test check pass is to c
 
 ## Slice log
 - 2026-11-20: spec written; the four forks answered by the user (ask, existing files only, shared files by tool-config part, shell writes included).
+- 2026-11-20: test-guardian PRE failed the first suite (19 findings: most basenames and shell forms untested, no section-boundary or near-miss cases). Spec clarified: curl `-O` not counted, wget `-O` counted; `SKIP=` maps to "skips the repository's git hooks"; flag rules only on `git`; executable bit required. The basename test now reads the criterion-1 table from this file.
